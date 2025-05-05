@@ -1,0 +1,144 @@
+/* #root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+} */
+/* 
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+} */
+
+/*=========================================== Soumyadeep Laha Css =========================*/
+
+.common-formgroup .input-group .input-group-text {
+  background-color: #FFF5F5 !important;
+  border: 1px solid #FFDDDC !important;
+} 
+
+.member-avatar {
+  width: 60px !important;
+  height: 60px !important;
+  margin-right: 16px !important;
+}
+
+.common-table tbody tr td {
+  padding: 12px 10px !important;
+}
+
+.form-check-input {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+
+.sharedata-view-wrapper .common-db-head .btn:disabled {
+  color: #fff !important;
+  background-color: #FFDDDC !important;
+  border-color: #FFDDDC !important;
+  border-color: #F8615E !important;
+  opacity: 0.3;
+}
+
+/*===================================== Domain Search Page ==============================*/
+.dm-search-content {
+  border: 1px solid #FFDDDC;
+  margin: 40px 0px 20px 0px;
+  padding: 12px;
+}
+
+.dm-search-content .name .name-top h4 {
+  font-size: 24px;
+  position: relative;
+  width: 100%;
+  color: var(--black-color);
+  margin-bottom: 8px;
+}
+.dm-search-content .name .name-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.dm-search-content .name p {
+  font-size: 16px;
+  position: relative;
+  width: 50%;
+  color: var(--black-color);
+  margin-bottom: 0px;
+}
+.head p {
+  font-size: 16px;
+  margin-top: 8px;
+  font-weight: 400;
+  margin-bottom: 0px;
+}
+
+.dm-search-content .dm-search-form.hide {
+  display: none;
+}
+.dm-search-content .dm-search-form.show {
+  display: block;
+}
+
+.dm-search-form .form-select, .dm-search-form .form-control {
+  font-size: 16px;
+  color: var(--black-color);
+  font-weight: 500;
+  border: 1px solid #FFDDDC;
+  padding: 15px;
+}
+.dm-search-content .common-db-head .head span {
+  margin-left: 12px;
+  font-size: 14px;
+}
+.dm-search-content .common-db-head .head span.active {
+  margin-left: 12px;
+}
+
+@media (max-width: 1475px) {
+  .dm-search-content .common-db-head .head span.active{
+    margin-left: 10px;
+  }
+  .domain-search-wrapper .head .name h4 {
+    font-size: 20px !important;
+  }
+}
+@media (max-width: 991px) {
+  .dm-search-content .common-db-head .head span.active{
+    margin-top: 0px;
+  }
+  
+}
