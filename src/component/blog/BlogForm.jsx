@@ -14,8 +14,9 @@ import { useCustomQuery } from '../../utils/QueryHooks'
 import config from '../../../config'
 import CategoryServices from '../../services/CategoryServices'
 import { buildQueryString } from '../../utils/BuildQuery'
+import AsyncSelect from 'react-select/async';
 
-const BlogForm = ({ title }) => {
+const BlogForm = ({ title, categorySlug }) => {
   const { slug } = useParams()
   const [decodeSlug, setDecodeSlug] = useState(false)
 
@@ -35,7 +36,8 @@ const BlogForm = ({ title }) => {
     slug: "",
     content: "",
     is_published: false,
-    category: ""
+    category_id: "",
+    category_name: ""
   }
 
   const formik = useFormik({
@@ -72,6 +74,7 @@ const BlogForm = ({ title }) => {
     formData.append("title", data?.title)
     formData.append("slug", data?.slug)
     formData.append("content", data?.content)
+    formData.append("category_id", data?.category_id)
     formData.append("is_published", data?.is_published)
     if (coverImg) {
       formData.append("cover_image", coverImg)
@@ -111,10 +114,11 @@ const BlogForm = ({ title }) => {
         setCoverImg(false)
         setCoverImgErr("")
         setShowCoverImg(false)
-        navigate("/blog/" + btoa(data?.data?.data?.slug))
-
 
         queryClient.refetchQueries(["blog-details", data?.data?.data?.slug])
+        queryClient.refetchQueries(["blog-list", 1])
+        navigate("/cms/blog/" + btoa(data?.data?.data?.slug))
+
         return;
       },
       onError: (err) => {
@@ -151,10 +155,12 @@ const BlogForm = ({ title }) => {
         setCoverImg(false)
         setCoverImgErr("")
         setShowCoverImg(false)
-        navigate("/blog/" + btoa(decodeSlug))
+
+        queryClient.refetchQueries(["blog-details", data?.data?.data?.slug])
+        queryClient.refetchQueries(["blog-list", 1])
+        navigate("/cms/blog/" + btoa(data?.data?.data?.slug))
 
 
-        queryClient.refetchQueries(["blog-details", decodeSlug])
         return;
       },
       onError: (err) => {
@@ -208,46 +214,11 @@ const BlogForm = ({ title }) => {
       }
 
 
+      if (data?.category) {
+        formik.setFieldValue("category_id", data?.category?.id)
+        formik.setFieldValue("category_name", data?.category?.name)
 
-
-
-    }
-  });
-  // Get By Slug Category
-  const {
-    data: categoryList,
-    isLoading: isCategoryLoad,
-  } = useCustomQuery({
-    queryKey: ['category-list', decodeSlug],
-    service: CategoryServices.categoryList,
-    params: buildQueryString([{
-      key: "page", value: 1,
-    }, {
-      key: "limit", value: 10
-
-    }, {
-      key: "parent_slug", value: decodeSlug
-    },
-    ]),
-
-    enabled: !!decodeSlug,
-    select: (data) => {
-      if (!data?.data?.status) {
-        Swal.fire({
-          title: "Error",
-          text: data?.data?.message,
-          icon: "error",
-        });
-        return
       }
-      return data?.data?.data;
-    },
-    errorMsg: "",
-    onSuccess: (data) => {
-
-
-
-
 
 
 
@@ -257,20 +228,57 @@ const BlogForm = ({ title }) => {
 
 
 
-  console.log(formik.values)
+
+  const handleCustomFormik = (e) => {
+    const generatedSlug = slugify(e?.target?.value, {
+      lower: true,
+      strict: true,
+    });
+    formik.setFieldValue("slug", generatedSlug);
+    formik.handleChange(e)
+  }
 
 
+  const handleSearchCategory = async (inputValue) => {
+    try {
+      const response = await CategoryServices.categoryList(buildQueryString([{
+        key: "page", value: 1,
+      }, {
+        key: "limit", value: 10
+
+      }, {
+        key: "parent_slug", value: categorySlug
+      },
+      {
+        key: "filter", value: "slug"
+      },
+      {
+        key: "search", value: inputValue
+      }
+      ]));
 
 
-  useEffect(() => {
-    if (formik.values.title) {
-      const generatedSlug = slugify(formik.values.title, {
-        lower: true,
-        strict: true,
-      });
-      formik.setFieldValue("slug", generatedSlug);
+      return response?.data?.data?.map((category) => ({
+        label: category.name, // Adjust based on your API response
+        value: category.id, // Use the actual unique identifier
+        // id: category.id
+      })) || [];
+    } catch (error) {
+      console.error("Error fetching Category list:", error);
+      return [];
     }
-  }, [formik.values.title]);
+  }
+
+
+  // useEffect(() => {
+  //   if (formik.values.title && !decodeSlug) {
+  //     const generatedSlug = slugify(formik.values.title, {
+  //       lower: true,
+  //       strict: true,
+  //     });
+  //     formik.setFieldValue("slug", generatedSlug);
+  //   }
+  // }, [formik.values.title, decodeSlug]);
 
 
 
@@ -278,7 +286,6 @@ const BlogForm = ({ title }) => {
   useEffect(() => {
     try {
       const decodeSlug = slug && atob(slug);
-      console.log("decodeSlug", !!slug, slug);
 
       slug && setDecodeSlug(() => decodeSlug || "");
     } catch (error) {
@@ -287,6 +294,11 @@ const BlogForm = ({ title }) => {
       navigate(-1)
     }
   }, [slug]);
+
+
+
+
+
 
   return (
     <>
@@ -298,13 +310,28 @@ const BlogForm = ({ title }) => {
           <Col md="6" className="mb-2">
             <FormGroup className="common-formgroup">
               <Label>Category *</Label>
-              <Input
-                type="text"
-                {...formik.getFieldProps("category")}
-                autoComplete="new-title"
-                className={formik.touched.category && formik.errors.category ? "is-invalid" : ""}
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={handleSearchCategory}
+                placeholder="Search Category Number..."
+                value={
+                  formik.values.category_id
+                    ? {
+                      label: formik.values.category_name, // You might need to store the name too
+                      value: formik.values.category_id,
+                    }
+                    : null
+                }
+                onChange={(selectedOption) => {
+                  formik.setFieldValue('category_id', selectedOption?.value || '');
+                  formik.setFieldValue('category_name', selectedOption?.label || ''); // optional, if you want to store label too
+                }}
+                onBlur={() => formik.setFieldTouched('category_id', true)}
               />
-              {formik.touched.category && <p className="text-danger">{formik.errors.category}</p>}
+              {formik.touched.category_id && formik.errors.category_id && (
+                <p className="text-danger">{formik.errors.category_id}</p>
+              )}
             </FormGroup>
           </Col>
           {/* Title */}
@@ -315,6 +342,13 @@ const BlogForm = ({ title }) => {
                 type="text"
                 {...formik.getFieldProps("title")}
                 autoComplete="new-title"
+                onChange={(e) => {
+                  handleCustomFormik(e
+
+
+                  )
+
+                }}
                 className={formik.touched.title && formik.errors.title ? "is-invalid" : ""}
               />
               {formik.touched.title && <p className="text-danger">{formik.errors.title}</p>}
@@ -420,7 +454,7 @@ const BlogForm = ({ title }) => {
 
               >
                 {
-                  mutation.isLoading || updatemutation?.isLoading ? <ButtonLoader /> : 'Create'
+                  mutation.isLoading || updatemutation?.isLoading ? <ButtonLoader /> : 'Save'
                 }
 
               </Button>

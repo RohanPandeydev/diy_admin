@@ -196,6 +196,12 @@ const BlogList = () => {
     );
     const headers = [
         {
+            key: "category",
+            label: "Category",
+            category:true
+
+        },
+        {
             key: "title",
             label: "Title"
 

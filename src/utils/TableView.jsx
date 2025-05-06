@@ -3,6 +3,7 @@ import { Table } from 'reactstrap'
 import parse from 'html-react-parser'
 import moment from 'moment'
 import config from '../../config'
+import { NavLink } from 'react-router-dom'
 
 const TableView = ({ headers = [], data = [], showActions = false, renderActions = () => null }) => {
     return (
@@ -32,6 +33,16 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
 
                                             </td>
                                         }
+                                        if (header.category) {
+                                            return <td key={colIndex}>
+
+                                                <NavLink to={"/seo/" + value?.parent?.slug + "/" + btoa(value?.slug)}>
+                                                    {value?.name}
+
+                                                </NavLink>
+
+                                            </td>
+                                        }
                                         if (header.date) {
                                             return <td key={colIndex}>
 
@@ -42,7 +53,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                         if (header.image) {
                                             return <td key={colIndex}>
 
-                                                {value? <img className='img-fluid' height={50} width={50} src={config.apiUrl + "/" + value} />:null}
+                                                {value ? <img className='img-fluid' height={50} width={50} src={config.apiUrl + "/" + value} /> : "No Image Found"}
                                             </td>
                                         }
                                         return (

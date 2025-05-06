@@ -25,9 +25,11 @@ const SeoList = ({ parentslug }) => {
     const {
         data: categoryList,
         isLoading: isCategoryLoad,
+        refetch
     } = useCustomQuery({
         queryKey: ['category-list', currentPage, parentslug],
         service: CategoryServices.categoryList,
+        staleTime:0,
         params: buildQueryString([{
             key: "page", value: currentPage || 1,
         }, {
@@ -100,6 +102,7 @@ const SeoList = ({ parentslug }) => {
         },
 
     ]
+
     return (
         <>
             {

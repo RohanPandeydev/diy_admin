@@ -9,7 +9,7 @@ import parse from 'html-react-parser'
 import moment from 'moment'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import ButtonLoader from '../../utils/Loader/ButtonLoader'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 const BlogDetail = ({ decodeSlug }) => {
 
@@ -188,6 +188,12 @@ const BlogDetail = ({ decodeSlug }) => {
           <Col lg={8} md={6}>
 
             <div className="order-desc-info-box">
+              <h3>Category:
+                <NavLink   to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + btoa(blogDetails?.category?.slug)}>
+                  {blogDetails?.category?.name}
+
+                </NavLink>
+              </h3>
               <h3>Title:{blogDetails?.title}</h3>
               <h5>
                 <span>Slug : {blogDetails?.slug}</span>
