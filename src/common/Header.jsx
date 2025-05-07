@@ -91,7 +91,7 @@ const Header = ({ handleToggleMenu }) => {
                   <div className="logo-hamburger-menu">
                     <div className="logo-wrap">
                       <Link to="/">
-                        <img className="img-fluid" src={ImagesPath.logo} alt="" />
+                        <img className="img-fluid"  src={ImagesPath.logo} alt="" />
                       </Link>
                     </div>
                     <div className="hamburger-menu">
@@ -116,17 +116,12 @@ const Header = ({ handleToggleMenu }) => {
                           </DropdownToggle>
                           <DropdownMenu>
                             <ul>
-                              <li>
-                                <h6 className="dropdown-header mb-2">Settings</h6>
-                              </li>
+                             
                               <li>
                                 <DropdownItem href="#" tag="a"> <FaRegUser /> Profile</DropdownItem>
                                 {/* <Link className='dropdown-item' to={"/profile"}><FaRegUser />Profile</Link> */}
                               </li>
-                              <li>
-                                {/* <DropdownItem href="#" tag="a"> <IoSettingsOutline /> Settings</DropdownItem> */}
-                                <Link className="dropdown-item"><IoSettingsOutline /> Settings</Link>
-                              </li>
+                            
 
                               <li className="border-top" onClick={handleLogout}>
                                 <DropdownItem ><CiLogout /> Logout</DropdownItem>
