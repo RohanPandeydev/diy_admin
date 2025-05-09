@@ -7,6 +7,9 @@ const CategoryServices = {};
 CategoryServices.categoryList = (query) => {
     return axios.get(`${config.apiUrl}/api/category${query}`, HttpHeaders.getAuthHeader());
 };
+CategoryServices.categoryListTree = (query) => {
+    return axios.get(`${config.apiUrl}/api/category/tree`, HttpHeaders.getAuthHeader());
+};
 CategoryServices.categoryBySlug = (params) => {
     if (!params?.slug) {
         return []

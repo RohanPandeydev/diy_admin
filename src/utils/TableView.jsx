@@ -50,6 +50,17 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
 
                                             </td>
                                         }
+                                        if (header.nested) {
+                                            return <td key={colIndex}>
+
+                                                {value?.length == 0 ? "N/A" : value?.map((each) => {
+                                                    return <p>
+                                                        {each?.name}
+                                                    </p>
+                                                })}
+
+                                            </td>
+                                        }
                                         if (header.image) {
                                             return <td key={colIndex}>
 
@@ -59,7 +70,6 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                         return (
                                             <td key={colIndex}>
                                                 {typeof value === 'boolean' ? (
-
 
                                                     <>
                                                         <label>
@@ -76,9 +86,6 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                                 }}
                                                             />
                                                             Published
-
-
-
                                                         </label>
                                                         <label>
                                                             <input
@@ -95,30 +102,8 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                             />
                                                             Unpublished
 
-
-
                                                         </label>
-
                                                     </>
-
-                                                    // <input
-                                                    //     type="radio"
-                                                    //     name={`row-${rowIndex}`}
-                                                    //     value={header?.key}
-                                                    //     checked={value}
-                                                    //     disabled={header.loader}
-                                                    //     onChange={() => {
-                                                    //         if (typeof header?.onChange == 'function') {
-                                                    //             header?.onChange(row, header?.key)
-                                                    //         }
-                                                    //     }}
-                                                    // />
-
-
-
-
-
-
 
                                                 ) : (
                                                     value

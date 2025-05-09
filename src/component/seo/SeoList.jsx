@@ -94,6 +94,12 @@ const SeoList = ({ parentslug }) => {
             label: "Slug"
 
         },
+        {
+            key: "child",
+            label: "Sub Category",
+            nested:true
+
+        },
 
         {
             key: "Action",
