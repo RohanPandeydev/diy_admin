@@ -1,11 +1,22 @@
-import React from 'react'
-import { Table } from 'reactstrap'
+import React, { useState } from 'react'
+import { Button, Table } from 'reactstrap'
 import parse from 'html-react-parser'
 import moment from 'moment'
 import config from '../../config'
 import { NavLink } from 'react-router-dom'
 
 const TableView = ({ headers = [], data = [], showActions = false, renderActions = () => null }) => {
+    const [expandedRows, setExpandedRows] = useState({})
+
+    const toggleRow = (index, value) => {
+        setExpandedRows((prev) => ({
+            ...prev,
+            [index]: !prev[index],
+            value: value
+        }))
+    }
+
+
     return (
         <div className="member-view-wrapper">
             <div className="common-db-head mb-4">
@@ -22,102 +33,134 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                             </tr>
                         </thead>
                         <tbody>
-                            {data.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {headers.map((header, colIndex) => {
-                                        const value = row[header?.key]
-                                        if (header.html) {
-                                            return <td key={colIndex}>
+                            {data.map((row, rowIndex) => {
 
-                                                {value && parse(value)}
+                                return (
+                                    <React.Fragment key={rowIndex}>
+                                        <tr>
+                                            {headers.map((header, colIndex) => {
+                                                const value = row[header?.key]
 
-                                            </td>
-                                        }
-                                        if (header.category) {
-                                            return <td key={colIndex}>
+                                                if (header.html) {
+                                                    return <td key={colIndex}>{value && parse(value)}</td>
+                                                }
 
-                                                <NavLink to={"/seo/" + value?.parent?.slug + "/" + btoa(value?.slug)}>
-                                                    {value?.name}
+                                                if (header.category) {
+                                                    return (
+                                                        <td key={colIndex}>
+                                                            <NavLink to={"/seo/" + value?.parent?.slug + "/" + btoa(value?.slug)}>
+                                                                {value?.name}
+                                                            </NavLink>
+                                                        </td>
+                                                    )
+                                                }
 
-                                                </NavLink>
+                                                if (header.date) {
+                                                    return <td key={colIndex}>{value && moment(value).format("lll")}</td>
+                                                }
 
-                                            </td>
-                                        }
-                                        if (header.date) {
-                                            return <td key={colIndex}>
+                                                if (header.nested) {
+                                                    return (
+                                                        <td key={colIndex}>
+                                                            {value?.length==0?"N/A" :<button className="btn btn-sm btn-outline-primary" onClick={() => toggleRow(rowIndex, value)}>
+                                                                {expandedRows[rowIndex] ? 'Hide' : 'Show'} Sub Category
+                                                            </button>}
+                                                        </td>
+                                                    )
+                                                }
 
-                                                {value && moment(value).format("lll")}
+                                                if (header.image) {
+                                                    return (
+                                                        <td key={colIndex}>
+                                                            {value ? (
+                                                                <img className='img-fluid' height={50} width={50} src={config.apiUrl + "/" + value} />
+                                                            ) : "No Image Found"}
+                                                        </td>
+                                                    )
+                                                }
 
-                                            </td>
-                                        }
-                                        if (header.nested) {
-                                            return <td key={colIndex}>
+                                                return (
+                                                    <td key={colIndex}>
+                                                        {typeof value === 'boolean' ? (
+                                                            <>
+                                                                <label>
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`publish-${rowIndex}`}
+                                                                        checked={value === true}
+                                                                        disabled={header.loader}
+                                                                        onChange={() => header.onChange?.(row, header?.key)}
+                                                                    />
+                                                                    Published
+                                                                </label>
+                                                                <label>
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`publish-${rowIndex}`}
+                                                                        checked={value === false}
+                                                                        disabled={header.loader}
+                                                                        onChange={() => header.onChange?.(row, header?.key)}
+                                                                    />
+                                                                    Unpublished
+                                                                </label>
+                                                            </>
+                                                        ) : (
+                                                            value
+                                                        )}
+                                                    </td>
+                                                )
+                                            })}
 
-                                                {value?.length == 0 ? "N/A" : value?.map((each) => {
-                                                    return <p>
-                                                        {each?.name}
-                                                    </p>
-                                                })}
+                                            {showActions && (
+                                                <td>
+                                                    {typeof renderActions === 'function' && renderActions(row)}
+                                                </td>
+                                            )}
+                                        </tr>
 
-                                            </td>
-                                        }
-                                        if (header.image) {
-                                            return <td key={colIndex}>
+                                        {/* Nested row display */}
+                                        {expandedRows[rowIndex] && (
+                                            <tr>
+                                                <td colSpan={headers.length + (showActions ? 1 : 0)}>
+                                                    {row.child?.length > 0 ? (
 
-                                                {value ? <img className='img-fluid' height={50} width={50} src={config.apiUrl + "/" + value} /> : "No Image Found"}
-                                            </td>
-                                        }
-                                        return (
-                                            <td key={colIndex}>
-                                                {typeof value === 'boolean' ? (
 
-                                                    <>
-                                                        <label>
-                                                            <input
-                                                                type="radio"
-                                                                name={`publish-${rowIndex}`}
-                                                                checked={value === true}
+                                                        <Table bordered size="sm">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Name</th>
+                                                                    <th>Slug</th>
+                                                                    <th>Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {row.child.map((item, i) => {
+                                                                    const parentslug = row?.slug
+                                                                    return <tr key={i}>
+                                                                        <td>{item.name}</td>
+                                                                        <td>{item.slug}</td>
+                                                                        <td>
+                                                                            <NavLink to={`/seo/${parentslug}/${btoa(item.slug)}`}>
+                                                                                <Button color="info" size="sm" className="me-2">View</Button>
+                                                                            </NavLink>
+                                                                            <NavLink to={`/seo/${parentslug}/update/${btoa(item.slug)}`}>
+                                                                                <Button color="primary" size="sm">Edit</Button>
+                                                                            </NavLink>
+                                                                        </td>
+                                                                    </tr>
+                                                                })}
+                                                            </tbody>
+                                                        </Table>
+                                                    ) : (
+                                                        <span>No nested data available.</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )}
 
-                                                                disabled={header.loader}
-                                                                onChange={() => {
-                                                                    if (typeof header.onChange === 'function') {
-                                                                        header.onChange(row, header?.key);
-                                                                    }
-                                                                }}
-                                                            />
-                                                            Published
-                                                        </label>
-                                                        <label>
-                                                            <input
-                                                                type="radio"
-                                                                name={`publish-${rowIndex}`}
-                                                                checked={value === false}
-
-                                                                disabled={header.loader}
-                                                                onChange={() => {
-                                                                    if (typeof header.onChange === 'function') {
-                                                                        header.onChange(row, header?.key);
-                                                                    }
-                                                                }}
-                                                            />
-                                                            Unpublished
-
-                                                        </label>
-                                                    </>
-
-                                                ) : (
-                                                    value
-                                                )}
-                                            </td>
-                                        )
-                                    })}
-                                    {showActions && (
-                                        <td>
-                                            {typeof renderActions === 'function' && renderActions(row)}
-                                        </td>
-                                    )}
-                                </tr>
-                            ))}
+                                    </React.Fragment>
+                                )
+                            })}
                         </tbody>
                     </Table>
                 </div>
