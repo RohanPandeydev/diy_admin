@@ -243,11 +243,17 @@ const SeoForm = ({ title }) => {
 
     // State to hold the custom script fields
     const [customHeadscripts, setCustomHeadScripts] = useState([""]); // Initially, one empty script field
+    const [customFooterscripts, setCustomFooterScripts] = useState([""]); // Initially, one empty script field
 
     // Handle adding a new field
     const handleCustomHeadScriptAddField = () => {
         if (customHeadscripts?.length == 5) return
         setCustomHeadScripts([...customHeadscripts, ""]);
+    };
+    // Handle adding a new field
+    const handleCustomFooterScriptAddField = () => {
+        if (customHeadscripts?.length == 5) return
+        setCustomFooterScripts([...customFooterscripts, ""]);
     };
 
     // Handle deleting a specific field
@@ -255,12 +261,24 @@ const SeoForm = ({ title }) => {
         const updatedScripts = customHeadscripts.filter((_, i) => i !== index);
         setCustomHeadScripts(updatedScripts);
     };
+    // Handle deleting a specific field
+    const handleCustomFooterDeleteField = (index) => {
+        const updatedScripts = customFooterscripts.filter((_, i) => i !== index);
+        setCustomFooterScripts(updatedScripts);
+    };
 
     // Handle script change for a specific index
     const handleCustomHeadScriptChange = (event, index) => {
         const updatedScripts = [...customHeadscripts];
         updatedScripts[index] = event.target.value;
         setCustomHeadScripts(updatedScripts);
+    };
+
+    // Handle script change for a specific index
+    const handleCustomFooterScriptChange = (event, index) => {
+        const updatedScripts = [...customFooterscripts];
+        updatedScripts[index] = event.target.value;
+        setCustomFooterScripts(updatedScripts);
     };
 
 
@@ -442,20 +460,7 @@ const SeoForm = ({ title }) => {
                         </FormGroup>
                     </Col>
 
-                    {/* Custom Scripts */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Custom Head Scripts</Label>
-                            <Input
-                                type="textarea"
-                                {...formik.getFieldProps("customHeadScripts")}
-                                autoComplete="new-customHeadScripts"
-                                className={formik.touched.customHeadScripts && formik.errors.customHeadScripts ? "is-invalid" : ""}
-                                rows={3}
-                            />
-                            {formik.touched.customHeadScripts && <p className="text-danger">{formik.errors.customHeadScripts}</p>}
-                        </FormGroup>
-                    </Col>
+
 
 
 
@@ -492,6 +497,45 @@ const SeoForm = ({ title }) => {
                                 type="button"
                                 color="primary"
                                 onClick={handleCustomHeadScriptAddField}
+                                className="mt-2"
+                            >
+                                Add Script
+                            </Button>
+                        </Col>}
+                    </Row>
+                    <Row>
+                        {/* Render each script field dynamically */}
+                        {customFooterscripts.map((script, index) => (
+                            <Col md="6" className="mb-2" key={index}>
+                                <FormGroup className="common-formgroup">
+                                    <Label>Custom Footer Script {index + 1}</Label>
+                                    <Input
+                                        type="textarea"
+                                        value={script}
+                                        onChange={(event) => handleCustomFooterScriptChange(event, index)}
+                                        autoComplete={`new-customScript${index}`}
+                                        className=""
+                                        rows={3}
+                                    />
+                                    {/* Delete button for each script field */}
+                                    {customFooterscripts?.length == 1 ? null : <Button
+                                        type="button"
+                                        color="danger"
+                                        onClick={() => handleCustomFooterDeleteField(index)}
+                                        className="mt-2"
+                                    >
+                                        Delete
+                                    </Button>}
+                                </FormGroup>
+                            </Col>
+                        ))}
+
+                        {/* Add button to add a new script field */}
+                        {customFooterscripts?.length > 4 ? null : <Col md="12">
+                            <Button
+                                type="button"
+                                color="primary"
+                                onClick={handleCustomFooterScriptAddField}
                                 className="mt-2"
                             >
                                 Add Script
