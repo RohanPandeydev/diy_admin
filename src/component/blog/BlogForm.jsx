@@ -48,11 +48,11 @@ const BlogForm = ({ title, categorySlug }) => {
     }
   });
 
-  const handleCoverImage = (e) => {
+  const handleCoverImage = async(e) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
 
-    const isFileValid = validateFileImage(file, 2, allowedExtensionsImage);
+    const isFileValid = await validateFileImage(file, 2, allowedExtensionsImage);
     if (!isFileValid?.isValid) {
       setCoverImgErr(isFileValid?.errorMessage);
       return;

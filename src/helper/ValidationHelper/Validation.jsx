@@ -36,14 +36,17 @@ export const SeoFormValidation = Yup.object().shape({
     .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be URL-friendly (lowercase, hyphens only)'),
 
   metaTitle: Yup.string()
-    .max(255, 'Meta Title must be at most 255 characters'),
+    .max(255, 'Meta Title must be at most 255 characters')
+    .notRequired(),
 
   metaDescription: Yup.string()
-    .max(255, 'Meta Description must be at most 255 characters'),
+    .max(255, 'Meta Description must be at most 255 characters')
+    .notRequired(),
 
   metaKeywords: Yup.string()
     .max(255, 'Meta Keywords must be at most 255 characters')
-    .notRequired(),
+    .notRequired()
+    .matches(/^[a-zA-Z0-9, ]*$/, 'Meta Keywords must be alphanumeric and comma separated'),
 
   canonicalUrl: Yup.string()
     .url('Invalid URL format')
@@ -56,10 +59,6 @@ export const SeoFormValidation = Yup.object().shape({
 
   ogDescription: Yup.string()
     .max(255, 'Open Graph Description must be at most 255 characters')
-    .notRequired(),
-
-  ogImage: Yup.string()
-    .url('Invalid URL format')
     .notRequired(),
 
   ogType: Yup.string()

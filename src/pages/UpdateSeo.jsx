@@ -6,9 +6,9 @@ import SeoForm from '../component/seo/SeoForm'
 const UpdateSeo = () => {
     return (
         <Wrapper>
-        <SeoForm  title={"Update Seo"}/>
+            <SeoForm title={"Seo"} />
 
-    </Wrapper>
+        </Wrapper>
     )
 }
 

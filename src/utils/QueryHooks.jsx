@@ -9,7 +9,7 @@ export const useCustomQuery = ({
     onSuccess, // Custom onSuccess handler for things like form prefill
     enabled = true, // Whether the query should run automatically
     showErrorToast = true, // Option to control error toast display
-    staleTime = 5 * 60 * 1000, // Default 5 minutes cache freshness
+    staleTime = 0, // Default 5 minutes cache freshness
     additionalOptions = {},// Any additional React Query options
     errorMsg = ""
 }) => {

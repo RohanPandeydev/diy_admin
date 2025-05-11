@@ -5,7 +5,7 @@ import SeoForm from '../component/seo/SeoForm'
 const AddSeo = () => {
     return (
         <Wrapper>
-            <SeoForm  title={"Add Blog"}/>
+            <SeoForm  title={"SEO"}/>
 
         </Wrapper>
     )

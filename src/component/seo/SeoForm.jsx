@@ -1,27 +1,83 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Col, Form, FormGroup, Input, Label, Row } from 'reactstrap'
 import { useFormik } from 'formik'
-import { BlogFormValidation, SeoFormValidation } from '../../helper/ValidationHelper/Validation'
-import validateFileImage from '../../utils/ValidationImage'
-import Editor from '../../utils/Editor'
+import { SeoFormValidation } from '../../helper/ValidationHelper/Validation'
 import Swal from 'sweetalert2'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import BlogServices from '../../services/BlogServices'
 import slugify from "slugify";
 import ButtonLoader from '../../utils/Loader/ButtonLoader'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useCustomQuery } from '../../utils/QueryHooks'
+import SeoServices from '../../services/SeoServices'
+import Loader from '../../utils/Loader/Loader'
+import { validateOgFileImage } from '../../utils/ValidationImage'
 import config from '../../../config'
-import CategoryServices from '../../services/CategoryServices'
-import { buildQueryString } from '../../utils/BuildQuery'
+import { useRef } from 'react'
 
 const SeoForm = ({ title }) => {
     const { slug, parentslug } = useParams()
     const [decodeSlug, setDecodeSlug] = useState(false)
+    const [isSlugAdded, setIsSlugAdded] = useState(false)
 
+    const allowedExtensionsImage = [".jpg", ".jpeg", ".png"]
+    const [ogImg, setOgImg] = useState(null);
+    const [showOgImg, setShowOgImg] = useState(null);
+    const [ogImgErr, setOgImgErr] = useState("");
+
+    const fileOgImgRef = useRef(null);
 
     const queryClient = useQueryClient()
     const navigate = useNavigate()
+
+
+    const handleAppendComma = (e) => {
+        const inputElement = document.getElementById("metaKeywordsInput");
+        const selectedText = inputElement.value.slice(inputElement.selectionStart, inputElement.selectionEnd);
+
+        if (selectedText === inputElement.value) {
+            // If the whole text is selected, replace spaces with commas
+            const newValue = inputElement.value.replace(/\s+/g, ',');
+            formik.setFieldValue("metaKeywords", newValue);
+        } else {
+            // If not, just append a comma at the end
+            const currentValue = formik.values.metaKeywords;
+            formik.setFieldValue("metaKeywords", currentValue + ",");
+        }
+
+        // Retain focus on the input field
+        inputElement.focus();
+    }
+
+    const handleAppendScriptTag = (e, tag, index, customOnChange) => {
+        const inputElement = document.getElementById(`${tag}${index}`);
+        const originalValue = inputElement.value;
+
+        // Remove any existing <script>...</script> tag
+        const valueWithoutScript = originalValue.replace(/<script>[\s\S]*?<\/script>/gi, "");
+
+        const selectionStart = inputElement.selectionStart;
+        const selectionEnd = inputElement.selectionEnd;
+
+        const selectedText = valueWithoutScript.slice(selectionStart, selectionEnd);
+
+        let newScript = "";
+
+        if (selectedText) {
+            // Wrap selected text with <script> tags
+            newScript = valueWithoutScript.slice(0, selectionStart) +
+                `<script>${selectedText}</script>` +
+                valueWithoutScript.slice(selectionEnd);
+        } else {
+            // Append empty <script> tag at the end
+            newScript = valueWithoutScript + "<script></script>";
+        }
+
+        // Update input value
+        customOnChange({ target: { value: newScript } }, index);
+
+        // Retain focus on the input field
+        inputElement.focus();
+    };
 
 
     function generateStructuredData(values) {
@@ -46,6 +102,22 @@ const SeoForm = ({ title }) => {
 
 
 
+    const handleOgImage = async (e) => {
+        const file = e?.target?.files?.[0];
+        if (!file) return;
+
+        const isFileValid = await validateOgFileImage(file, 2, allowedExtensionsImage);
+        console.log(validateOgFileImage, "validateOgFileImage")
+        if (!isFileValid?.isValid) {
+            setOgImgErr(isFileValid?.errorMessage);
+            return;
+        }
+
+        setOgImg(file);
+        setShowOgImg(URL.createObjectURL(file));
+        setOgImgErr("");
+    };
+
 
     const initialValues = {
         title: "",               // Title tag (shown in search engine results and browser tab)
@@ -56,7 +128,6 @@ const SeoForm = ({ title }) => {
         canonicalUrl: "",        // Canonical URL to avoid duplicate content issues
         ogTitle: "",             // Open Graph title (used by social platforms like Facebook)
         ogDescription: "",       // Open Graph description
-        ogImage: "",             // OG image to display when page is shared
         ogType: "website",       // Type of content (website, article, etc.)
         robots: "index, follow", // Tells search engines to index and follow links
         // Optional Scripts
@@ -75,15 +146,51 @@ const SeoForm = ({ title }) => {
 
 
 
+    const handleRefetch = (slug) => {
+        queryClient.refetchQueries("parent-category-list")
+        queryClient.refetchQueries(["category-list", 1])
+        queryClient.refetchQueries(["category-details", slug])
+        queryClient.refetchQueries(["seo-details-by-slug", slug])
+
+    }
+
     const submitHandler = (data) => {
         const structureData = generateStructuredData(data)
-        console.log("Form Submitted:", data, structureData);
 
+        const formData = new FormData()
+
+        formData.append("title", data?.title)
+        formData.append("slug", data?.slug)
+        formData.append("meta_title", data?.metaTitle)
+        formData.append("meta_description", data?.metaDescription)
+        formData.append("meta_keywords", data?.metaKeywords)
+        formData.append("canonical_url", data?.canonicalUrl)
+        formData.append("og_title", data?.ogTitle)
+        formData.append("og_description", data?.ogDescription)
+        formData.append("og_type", data?.ogType)
+        formData.append("custom_head_scripts", data?.customHeadScripts)
+        formData.append("custom_footer_scripts", data?.customFooterScripts)
+        formData.append("google_cseid", data?.googleCSEId)
+        formData.append("json_ld", JSON.stringify(structureData))
+        if (data?.ogImage) {
+            formData.append("og_image", ogImg)
+        }
+        if (isSlugAdded) {
+            formData.append("slugId", decodeSlug)
+
+            updatemutation.mutate(formData)
+
+            return
+        }
+        formData.append("category_slug", decodeSlug)
+
+
+        mutation.mutate(formData)
     };
 
 
     const mutation = useMutation(
-        (formdata) => BlogServices.addBlog(formdata),
+        (formdata) => SeoServices.addSeo(formdata),
 
         {
             onSuccess: (data) => {
@@ -93,23 +200,33 @@ const SeoForm = ({ title }) => {
                         text: data?.data?.message,
                         icon: "error",
                     });
+
                     return
                 }
 
 
                 Swal.fire({
                     title: "Successful",
-                    text: "Blog created  Successfully",
+                    text: "Seo Added  Successfully",
                     icon: "success",
                 });
                 formik.resetForm()
-                setCoverImg(false)
-                setCoverImgErr("")
-                setShowCoverImg(false)
-                navigate("/blog/" + btoa(data?.data?.data?.slug))
+                setOgImg(false)
+                setOgImgErr("")
+                setShowOgImg(false)
+                formik.resetForm()
+                handleRefetch(data?.data?.data?.slug)
 
 
-                queryClient.refetchQueries(["blog-details", data?.data?.data?.slug])
+                navigate("/seo/" + data?.data?.data?.category?.parent?.slug + "/" + btoa(data?.data?.data?.slug))
+
+
+
+
+
+
+
+                // queryClient.refetchQueries(["seo-details", data?.data?.data?.slug])
                 return;
             },
             onError: (err) => {
@@ -123,7 +240,7 @@ const SeoForm = ({ title }) => {
         }
     );
     const updatemutation = useMutation(
-        (formdata) => BlogServices.updateBlogBySlug(formdata),
+        (formdata) => SeoServices.updateSeoBySlug(formdata),
 
         {
             onSuccess: (data) => {
@@ -139,17 +256,22 @@ const SeoForm = ({ title }) => {
 
                 Swal.fire({
                     title: "Successful",
-                    text: "Blog updated  Successfully",
+                    text: "Seo updated  Successfully",
                     icon: "success",
                 });
                 formik.resetForm()
-                setCoverImg(false)
-                setCoverImgErr("")
-                setShowCoverImg(false)
-                navigate("/blog/" + btoa(decodeSlug))
+                setOgImg(false)
+                setOgImgErr("")
+                setShowOgImg(false)
+                console.log(data, "datadatadata")
 
+                // navigate("/blog/" + btoa(decodeSlug))
 
-                queryClient.refetchQueries(["blog-details", decodeSlug])
+                formik.resetForm()
+                handleRefetch(data?.data?.data?.slug)
+
+                navigate("/seo/" + data?.data?.data?.category?.parent?.slug + "/" + btoa(data?.data?.data?.slug))
+
                 return;
             },
             onError: (err) => {
@@ -163,7 +285,6 @@ const SeoForm = ({ title }) => {
         }
     );
 
-    console.log(formik.errors)
 
 
 
@@ -173,49 +294,92 @@ const SeoForm = ({ title }) => {
         data,
         isLoading,
     } = useCustomQuery({
-        queryKey: ['category-details', decodeSlug],
-        service: CategoryServices.categoryBySlug,
+        queryKey: ['seo-details-by-slug', decodeSlug],
+        service: SeoServices.seoBySlug,
         params: { slug: decodeSlug },
         enabled: !!decodeSlug && !!parentslug,
         staleTime: 0,
-        select: (data) => {
-            if (!data?.data?.status) {
-                Swal.fire({
-                    title: "Error",
-                    text: data?.data?.message,
-                    icon: "error",
-                });
+        onSuccess: (data) => {
+            // console.log(data, "titletitle")
+            if (!data?.status) {
+                // Swal.fire({
+                //     title: "Error",
+                //     text: data?.message,
+                //     icon: "error",
+
+                // });
+                setIsSlugAdded(false)
+
+
                 return
             }
-            return data?.data?.data;
+
+            formik.setFieldValue("title", data?.data?.title || "")
+            formik.setFieldValue("slug", data?.data?.slug || "")
+            formik.setFieldValue("metaTitle", data?.data?.meta_title || "")
+            formik.setFieldValue("metaDescription", data?.data?.meta_description || "")
+            formik.setFieldValue("metaKeywords", data?.data?.meta_keywords || "")
+            formik.setFieldValue("canonicalUrl", data?.data?.canonical_url || "")
+            formik.setFieldValue("ogTitle", data?.data?.og_title || "")
+            formik.setFieldValue("ogDescription", data?.data?.og_description || "")
+            formik.setFieldValue("ogType", data?.data?.og_type || "")
+            formik.setFieldValue("robots", data?.data?.robots || "")
+            formik.setFieldValue("googleCSEId", data?.data?.google_cseid || "")
+            if (data?.data?.custom_head_scripts?.length) {
+                const parse = JSON.parse(data?.data?.custom_head_scripts)
+                if (parse?.length) {
+                    formik.setFieldValue("customHeadScripts", JSON.stringify(parse))
+                    setCustomHeadScripts(parse)
+
+                }
+            }
+            if (data?.data?.custom_footer_scripts?.length) {
+                const parse = JSON.parse(data?.data?.custom_footer_scripts)
+                if (parse?.length) {
+                    formik.setFieldValue("customFooterScripts", JSON.stringify(parse))
+                    setCustomFooterScripts(parse)
+
+                }
+            }
+            if (data?.og_image) {
+
+
+                setShowOgImg(config.apiUrl + "/" + data?.og_image)
+            }
+
+            setIsSlugAdded(true)
+
         },
+        select: (data) => {
+            // if (!data?.data?.status) {
+            //     Swal.fire({
+            //         title: "Error",
+            //         text: data?.data?.message,
+            //         icon: "error",
+
+            //     });
+
+
+            //     return
+            // }
+
+            return data?.data;
+        },
+
         errorMsg: "",
-        onSuccess: (data) => {
 
-
-
-
-
-
-        }
     });
 
 
-
-
-
-
-
-
     useEffect(() => {
-        if (formik.values.title) {
+        if (formik.values.title && !isLoading && !data.status) {
             const generatedSlug = slugify(formik.values.title, {
                 lower: true,
                 strict: true,
             });
             formik.setFieldValue("slug", generatedSlug);
         }
-    }, [formik.values.title]);
+    }, [formik.values.title, decodeSlug, isLoading, data]);
 
 
 
@@ -223,7 +387,6 @@ const SeoForm = ({ title }) => {
     useEffect(() => {
         try {
             const decodeSlug = slug && atob(slug);
-            console.log("decodeSlug", !!slug, slug);
 
             slug && setDecodeSlug(() => decodeSlug || "");
         } catch (error) {
@@ -234,6 +397,15 @@ const SeoForm = ({ title }) => {
     }, [slug]);
 
 
+
+
+    useEffect(() => {
+        if (decodeSlug && !isLoading && !data?.status) {
+            formik.setFieldValue("title", decodeSlug);
+            formik.setFieldValue("slug", decodeSlug);
+
+        }
+    }, [decodeSlug, isLoading, data])
 
 
 
@@ -271,6 +443,8 @@ const SeoForm = ({ title }) => {
     const handleCustomHeadScriptChange = (event, index) => {
         const updatedScripts = [...customHeadscripts];
         updatedScripts[index] = event.target.value;
+
+        formik.setFieldValue("customHeadScripts", JSON.stringify(updatedScripts))
         setCustomHeadScripts(updatedScripts);
     };
 
@@ -278,6 +452,8 @@ const SeoForm = ({ title }) => {
     const handleCustomFooterScriptChange = (event, index) => {
         const updatedScripts = [...customFooterscripts];
         updatedScripts[index] = event.target.value;
+        formik.setFieldValue("customFooterScripts", JSON.stringify(updatedScripts))
+
         setCustomFooterScripts(updatedScripts);
     };
 
@@ -289,259 +465,330 @@ const SeoForm = ({ title }) => {
 
 
 
-
     return (
         <>
-            <h1>{title}</h1>
+            {
+                isLoading ? <Loader /> : <>
+                    <h1>{data?.status ? "UPDATE " + title : "Add " + title}</h1>
 
-            <Form onSubmit={formik.handleSubmit}>
-                <Row>
-                    {/* Title */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Title</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("title")}
-                                autoComplete="new-title"
-                                className={formik.touched.title && formik.errors.title ? "is-invalid" : ""}
-                            />
-                            {formik.touched.title && <p className="text-danger">{formik.errors.title}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Slug */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Slug *</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("slug")}
-                                autoComplete="new-slug"
-                                className={formik.touched.slug && formik.errors.slug ? "is-invalid" : ""}
-                            />
-                            {formik.touched.slug && <p className="text-danger">{formik.errors.slug}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* SEO Meta Title */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Meta Title</Label>
-                            <Input
-                                type="text"
-                                name="metaTitle"
-                                {...formik.getFieldProps("metaTitle")}
-                                autoComplete="new-metaTitle"
-                                className={formik.touched.metaTitle && formik.errors.metaTitle ? "is-invalid" : ""}
-                            />
-                            {formik.touched.metaTitle && <p className="text-danger">{formik.errors.metaTitle}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* SEO Meta Description */}
-                    <Col md="12" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Meta Description</Label>
-                            <Input
-                                type="textarea"
-                                {...formik.getFieldProps("metaDescription")}
-                                autoComplete="new-metaDescription"
-                                className={formik.touched.metaDescription && formik.errors.metaDescription ? "is-invalid" : ""}
-                                rows={3}
-                            />
-                            {formik.touched.metaDescription && <p className="text-danger">{formik.errors.metaDescription}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Canonical URL */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Canonical URL</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("canonicalUrl")}
-                                autoComplete="new-canonicalUrl"
-                                className={formik.touched.canonicalUrl && formik.errors.canonicalUrl ? "is-invalid" : ""}
-                            />
-                            {formik.touched.canonicalUrl && <p className="text-danger">{formik.errors.canonicalUrl}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Meta Keywords (Optional) */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Meta Keywords (comma separated)</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("metaKeywords")}
-                                autoComplete="new-metaKeywords"
-                                className={formik.touched.metaKeywords && formik.errors.metaKeywords ? "is-invalid" : ""}
-                            />
-                            {formik.touched.metaKeywords && <p className="text-danger">{formik.errors.metaKeywords}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Robots */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Robots Meta Tag</Label>
-                            <Input
-                                type="select"
-                                {...formik.getFieldProps("robots")}
-                                className={formik.touched.robots && formik.errors.robots ? "is-invalid" : ""}
-                            >
-                                <option value="index, follow">Index, Follow</option>
-                                <option value="noindex, follow">No Index, Follow</option>
-                                <option value="index, nofollow">Index, No Follow</option>
-                                <option value="noindex, nofollow">No Index, No Follow</option>
-                            </Input>
-                            {formik.touched.robots && <p className="text-danger">{formik.errors.robots}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Open Graph Title */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Open Graph Title</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("ogTitle")}
-                                autoComplete="new-ogTitle"
-                                className={formik.touched.ogTitle && formik.errors.ogTitle ? "is-invalid" : ""}
-                            />
-                            {formik.touched.ogTitle && <p className="text-danger">{formik.errors.ogTitle}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Open Graph Description */}
-                    <Col md="12" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Open Graph Description</Label>
-                            <Input
-                                type="textarea"
-                                {...formik.getFieldProps("ogDescription")}
-                                autoComplete="new-ogDescription"
-                                className={formik.touched.ogDescription && formik.errors.ogDescription ? "is-invalid" : ""}
-                                rows={3}
-                            />
-                            {formik.touched.ogDescription && <p className="text-danger">{formik.errors.ogDescription}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Open Graph Image URL */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Open Graph Image URL</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("ogImage")}
-                                autoComplete="new-ogImage"
-                                className={formik.touched.ogImage && formik.errors.ogImage ? "is-invalid" : ""}
-                            />
-                            {formik.touched.ogImage && <p className="text-danger">{formik.errors.ogImage}</p>}
-                        </FormGroup>
-                    </Col>
-
-                    {/* Open Graph Type */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Open Graph Type</Label>
-                            <Input
-                                type="select"
-                                {...formik.getFieldProps("ogType")}
-                                className={formik.touched.ogType && formik.errors.ogType ? "is-invalid" : ""}
-                            >
-                                <option value="website">Website</option>
-                                <option value="article">Article</option>
-                                <option value="video">Video</option>
-                            </Input>
-                            {formik.touched.ogType && <p className="text-danger">{formik.errors.ogType}</p>}
-                        </FormGroup>
-                    </Col>
-
-
-
-
-
-                    <Row>
-                        {/* Render each script field dynamically */}
-                        {customHeadscripts.map((script, index) => (
-                            <Col md="6" className="mb-2" key={index}>
+                    <Form onSubmit={formik.handleSubmit}>
+                        <Row>
+                            {/* Title */}
+                            <Col md="6" className="mb-2">
                                 <FormGroup className="common-formgroup">
-                                    <Label>Custom Head Script {index + 1}</Label>
+                                    <Label>Title</Label>
                                     <Input
-                                        type="textarea"
-                                        value={script}
-                                        onChange={(event) => handleCustomHeadScriptChange(event, index)}
-                                        autoComplete={`new-customScript${index}`}
-                                        className=""
-                                        rows={3}
+                                        type="text"
+                                        {...formik.getFieldProps("title")}
+                                        autoComplete="new-title"
+                                        className={formik.touched.title && formik.errors.title ? "is-invalid" : ""}
                                     />
-                                    {/* Delete button for each script field */}
-                                    {customHeadscripts?.length == 1 ? null : <Button
-                                        type="button"
-                                        color="danger"
-                                        onClick={() => handleCustomHeadDeleteField(index)}
-                                        className="mt-2"
-                                    >
-                                        Delete
-                                    </Button>}
+                                    {formik.touched.title && <p className="text-danger">{formik.errors.title}</p>}
                                 </FormGroup>
                             </Col>
-                        ))}
 
-                        {/* Add button to add a new script field */}
-                        {customHeadscripts?.length > 4 ? null : <Col md="12">
-                            <Button
-                                type="button"
-                                color="primary"
-                                onClick={handleCustomHeadScriptAddField}
-                                className="mt-2"
-                            >
-                                Add Script
-                            </Button>
-                        </Col>}
-                    </Row>
-                    <Row>
-                        {/* Render each script field dynamically */}
-                        {customFooterscripts.map((script, index) => (
-                            <Col md="6" className="mb-2" key={index}>
+                            {/* Slug */}
+                            <Col md="6" className="mb-2">
                                 <FormGroup className="common-formgroup">
-                                    <Label>Custom Footer Script {index + 1}</Label>
+                                    <Label>Slug *</Label>
                                     <Input
-                                        type="textarea"
-                                        value={script}
-                                        onChange={(event) => handleCustomFooterScriptChange(event, index)}
-                                        autoComplete={`new-customScript${index}`}
-                                        className=""
-                                        rows={3}
+                                        type="text"
+                                        {...formik.getFieldProps("slug")}
+                                        autoComplete="new-slug"
+                                        className={formik.touched.slug && formik.errors.slug ? "is-invalid" : ""}
                                     />
-                                    {/* Delete button for each script field */}
-                                    {customFooterscripts?.length == 1 ? null : <Button
-                                        type="button"
-                                        color="danger"
-                                        onClick={() => handleCustomFooterDeleteField(index)}
-                                        className="mt-2"
-                                    >
-                                        Delete
-                                    </Button>}
+                                    {formik.touched.slug && <p className="text-danger">{formik.errors.slug}</p>}
                                 </FormGroup>
                             </Col>
-                        ))}
 
-                        {/* Add button to add a new script field */}
-                        {customFooterscripts?.length > 4 ? null : <Col md="12">
-                            <Button
-                                type="button"
-                                color="primary"
-                                onClick={handleCustomFooterScriptAddField}
-                                className="mt-2"
-                            >
-                                Add Script
-                            </Button>
-                        </Col>}
-                    </Row>
+                            {/* SEO Meta Title */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Meta Title</Label>
+                                    <Input
+                                        type="text"
+                                        name="metaTitle"
+                                        {...formik.getFieldProps("metaTitle")}
+                                        autoComplete="new-metaTitle"
+                                        className={formik.touched.metaTitle && formik.errors.metaTitle ? "is-invalid" : ""}
+                                    />
+                                    {formik.touched.metaTitle && <p className="text-danger">{formik.errors.metaTitle}</p>}
+                                </FormGroup>
+                            </Col>
+
+                            {/* SEO Meta Description */}
+                            <Col md="12" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Meta Description</Label>
+                                    <Input
+                                        type="textarea"
+                                        {...formik.getFieldProps("metaDescription")}
+                                        autoComplete="new-metaDescription"
+                                        className={formik.touched.metaDescription && formik.errors.metaDescription ? "is-invalid" : ""}
+                                        rows={3}
+                                    />
+                                    {formik.touched.metaDescription && <p className="text-danger">{formik.errors.metaDescription}</p>}
+                                </FormGroup>
+                            </Col>
+
+                            {/* Canonical URL */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Canonical URL</Label>
+                                    <Input
+                                        type="text"
+                                        {...formik.getFieldProps("canonicalUrl")}
+                                        autoComplete="new-canonicalUrl"
+                                        className={formik.touched.canonicalUrl && formik.errors.canonicalUrl ? "is-invalid" : ""}
+                                    />
+                                    {formik.touched.canonicalUrl && <p className="text-danger">{formik.errors.canonicalUrl}</p>}
+                                </FormGroup>
+                            </Col>
+
+                            {/* Meta Keywords (Optional) */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>
+                                        Meta Keywords (comma separated)
+                                        {formik.values?.metaKeywords?.length > 0 && (
+                                            <small
+                                                className="text-primary"
+                                                onClick={handleAppendComma}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                &nbsp; Add comma
+                                            </small>
+                                        )}
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        {...formik.getFieldProps("metaKeywords")}
+                                        autoComplete="new-metaKeywords"
+                                        id="metaKeywordsInput"
+                                        className={formik.touched.metaKeywords && formik.errors.metaKeywords ? "is-invalid" : ""}
+                                        onBlur={formik.handleBlur}
+                                    />
+                                    {formik.touched.metaKeywords && formik.errors.metaKeywords && (
+                                        <p className="text-danger">{formik.errors.metaKeywords}</p>
+                                    )}
+                                </FormGroup>
+                            </Col>
+
+
+                            {/* Robots */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Robots Meta Tag</Label>
+                                    <Input
+                                        type="select"
+                                        {...formik.getFieldProps("robots")}
+                                        className={formik.touched.robots && formik.errors.robots ? "is-invalid" : ""}
+                                    >
+                                        <option value="index, follow">Index, Follow</option>
+                                        <option value="noindex, follow">No Index, Follow</option>
+                                        <option value="index, nofollow">Index, No Follow</option>
+                                        <option value="noindex, nofollow">No Index, No Follow</option>
+                                    </Input>
+                                    {formik.touched.robots && <p className="text-danger">{formik.errors.robots}</p>}
+                                </FormGroup>
+                            </Col>
+
+                            {/* Open Graph Title */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Open Graph Title</Label>
+                                    <Input
+                                        type="text"
+                                        {...formik.getFieldProps("ogTitle")}
+                                        autoComplete="new-ogTitle"
+                                        className={formik.touched.ogTitle && formik.errors.ogTitle ? "is-invalid" : ""}
+                                    />
+                                    {formik.touched.ogTitle && <p className="text-danger">{formik.errors.ogTitle}</p>}
+                                </FormGroup>
+                            </Col>
+
+                            {/* Open Graph Description */}
+                            <Col md="12" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Open Graph Description</Label>
+                                    <Input
+                                        type="textarea"
+                                        {...formik.getFieldProps("ogDescription")}
+                                        autoComplete="new-ogDescription"
+                                        className={formik.touched.ogDescription && formik.errors.ogDescription ? "is-invalid" : ""}
+                                        rows={3}
+                                    />
+                                    {formik.touched.ogDescription && <p className="text-danger">{formik.errors.ogDescription}</p>}
+                                </FormGroup>
+                            </Col>
+
+                            {/* Open Graph Image URL
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Open Graph Image URL</Label>
+                                    <Input
+                                        type="text"
+                                        {...formik.getFieldProps("ogImage")}
+                                        autoComplete="new-ogImage"
+                                        className={formik.touched.ogImage && formik.errors.ogImage ? "is-invalid" : ""}
+                                    />
+                                    {formik.touched.ogImage && <p className="text-danger">{formik.errors.ogImage}</p>}
+                                </FormGroup>
+                            </Col> */}
+
+                            {/* Open Graph Type */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Open Graph Type</Label>
+                                    <Input
+                                        type="select"
+                                        {...formik.getFieldProps("ogType")}
+                                        className={formik.touched.ogType && formik.errors.ogType ? "is-invalid" : ""}
+                                    >
+                                        <option value="website">Website</option>
+                                        <option value="article">Article</option>
+                                        <option value="video">Video</option>
+                                    </Input>
+                                    {formik.touched.ogType && <p className="text-danger">{formik.errors.ogType}</p>}
+                                </FormGroup>
+                            </Col>
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>
+                                        Open Graph Image                                       <br />
+                                        <small className="text-muted">
+                                            (Accepted: JPG, JPEG, PNG &nbsp;|&nbsp; Max size: 2MB &nbsp;|&nbsp; Min dimensions: 1200x630px &nbsp;|&nbsp; Aspect ratio: ~1.91:1)
+                                        </small>
+                                    </Label>
+                                    <Input
+                                        type="file"
+                                        name="og_image"
+                                        accept={allowedExtensionsImage}
+                                        onChange={handleOgImage}
+                                        innerRef={fileOgImgRef}
+                                        autoComplete="new-og_image"
+                                        className={ogImgErr ? "is-invalid" : ""}
+                                    />
+                                    {ogImgErr && <p className="text-danger">{ogImgErr}</p>}
+                                    {showOgImg && (
+                                        <div className="upload-review mt-2">
+                                            <img
+                                                src={showOgImg}
+                                                alt="Cover Preview"
+                                                className="img-fluid"
+                                                height={100}
+                                                width={100}
+                                                style={{ objectFit: "cover", borderRadius: "4px" }}
+                                            />
+                                        </div>
+                                    )}
+                                </FormGroup>
+                            </Col>
+
+
+
+
+
+                            <Row>
+                                {/* Render each script field dynamically */}
+                                {customHeadscripts.map((script, index) => (
+                                    <Col md="6" className="mb-2" key={index}>
+                                        <FormGroup className="common-formgroup">
+                                            <Label>Custom Head Script {index + 1}</Label>
+
+                                            <small
+                                                className="text-primary"
+                                                onClick={(e) => handleAppendScriptTag(e, "customHeadScriptInput", index, handleCustomHeadScriptChange)}
+                                                style={{ cursor: 'pointer', display: 'inline-block', marginTop: '5px' }}
+                                            >
+                                                Script tag
+                                            </small>                                            <Input
+                                                type="textarea"
+                                                value={script}
+                                                onChange={(event) => handleCustomHeadScriptChange(event, index)}
+                                                autoComplete={`new-customScript${index}`}
+                                                className=""
+                                                rows={3}
+                                                id={`customHeadScriptInput${index}`}
+                                            />
+                                            {/* Add Script button */}
+
+                                            {/* Delete button for each script field */}
+                                            {customHeadscripts?.length === 1 ? null : (
+                                                <Button
+                                                    type="button"
+                                                    color="danger"
+                                                    onClick={() => handleCustomHeadDeleteField(index)}
+                                                    className="mt-2"
+                                                >
+                                                    Delete
+                                                </Button>
+                                            )}
+                                        </FormGroup>
+                                    </Col>
+
+                                ))}
+
+                                {/* Add button to add a new script field */}
+                                {customHeadscripts?.length > 4 ? null : <Col md="12">
+                                    <Button
+                                        type="button"
+                                        color="primary"
+                                        onClick={handleCustomHeadScriptAddField}
+                                        className="mt-2"
+                                    >
+                                        Add Script
+                                    </Button>
+                                </Col>}
+                            </Row>
+                            <Row>
+                                {/* Render each script field dynamically */}
+                                {customFooterscripts.map((script, index) => (
+                                    <Col md="6" className="mb-2" key={index}>
+                                        <FormGroup className="common-formgroup">
+                                            <Label>Custom Footer Script {index + 1}</Label>
+                                            <small
+                                                className="text-primary"
+                                                onClick={(e) => handleAppendScriptTag(e, "customFooterScriptInput", index, handleCustomFooterScriptChange)}
+                                                style={{ cursor: 'pointer', display: 'inline-block', marginTop: '5px' }}
+                                            >
+                                                Script Tag
+                                            </small>
+                                            <Input
+                                                type="textarea"
+                                                value={script}
+                                                onChange={(event) => handleCustomFooterScriptChange(event, index)}
+                                                autoComplete={`new-customScript${index}`}
+                                                className=""
+                                                rows={3}
+                                                id={`customFooterScriptInput${index}`}
+                                            />
+
+                                            {/* Delete button for each script field */}
+                                            {customFooterscripts?.length == 1 ? null : <Button
+                                                type="button"
+                                                color="danger"
+                                                onClick={() => handleCustomFooterDeleteField(index)}
+                                                className="mt-2"
+                                            >
+                                                Delete
+                                            </Button>}
+                                        </FormGroup>
+                                    </Col>
+                                ))}
+
+                                {/* Add button to add a new script field */}
+                                {customFooterscripts?.length > 4 ? null : <Col md="12">
+                                    <Button
+                                        type="button"
+                                        color="primary"
+                                        onClick={handleCustomFooterScriptAddField}
+                                        className="mt-2"
+                                    >
+                                        Add Script
+                                    </Button>
+                                </Col>}
+                            </Row>
 
 
 
@@ -552,8 +799,8 @@ const SeoForm = ({ title }) => {
 
 
 
-                    {/* Custom Footer Scripts */}
-                    {/* <Col md="6" className="mb-2">
+                            {/* Custom Footer Scripts */}
+                            {/* <Col md="6" className="mb-2">
                         <FormGroup className="common-formgroup">
                             <Label>Custom Footer Scripts</Label>
                             <Input
@@ -572,35 +819,37 @@ const SeoForm = ({ title }) => {
 
 
 
-                    {/* Google CSE ID */}
-                    <Col md="6" className="mb-2">
-                        <FormGroup className="common-formgroup">
-                            <Label>Google CSE ID</Label>
-                            <Input
-                                type="text"
-                                {...formik.getFieldProps("googleCSEId")}
-                                autoComplete="new-googleCSEId"
-                                className={formik.touched.googleCSEId && formik.errors.googleCSEId ? "is-invalid" : ""}
-                            />
-                            {formik.touched.googleCSEId && <p className="text-danger">{formik.errors.googleCSEId}</p>}
-                        </FormGroup>
-                    </Col>
+                            {/* Google CSE ID */}
+                            <Col md="6" className="mb-2">
+                                <FormGroup className="common-formgroup">
+                                    <Label>Google CSE ID</Label>
+                                    <Input
+                                        type="text"
+                                        {...formik.getFieldProps("googleCSEId")}
+                                        autoComplete="new-googleCSEId"
+                                        className={formik.touched.googleCSEId && formik.errors.googleCSEId ? "is-invalid" : ""}
+                                    />
+                                    {formik.touched.googleCSEId && <p className="text-danger">{formik.errors.googleCSEId}</p>}
+                                </FormGroup>
+                            </Col>
 
-                    {/* Submit */}
-                    <Col md="12">
-                        <FormGroup>
-                            <Button
-                                className="btn btn-style1 px-4 py-2"
-                                type="submit"
-                                disabled={mutation?.isLoading || updatemutation?.isLoading}
-                            >
-                                {mutation.isLoading || updatemutation?.isLoading ? <ButtonLoader /> : 'Save'}
-                            </Button>
-                        </FormGroup>
-                    </Col>
-                </Row>
-            </Form>
+                            {/* Submit */}
+                            <Col md="12">
+                                <FormGroup>
+                                    <Button
+                                        className="btn btn-style1 px-4 py-2"
+                                        type="submit"
+                                        disabled={mutation?.isLoading || updatemutation?.isLoading}
+                                    >
+                                        {mutation.isLoading || updatemutation?.isLoading ? <ButtonLoader /> : 'Save'}
+                                    </Button>
+                                </FormGroup>
+                            </Col>
+                        </Row>
+                    </Form>
 
+                </>
+            }
         </>
     );
 };
