@@ -6,6 +6,7 @@ import { useCustomQuery } from "../utils/QueryHooks";
 import { buildQueryString } from "../utils/BuildQuery";
 import CategoryServices from "../services/CategoryServices";
 import Loader from "../utils/Loader/Loader";
+import NoDataFound from "../utils/NoDataFound";
 
 const Dashboard = () => {
   // Fetch root-level SEO categories
@@ -35,7 +36,7 @@ const Dashboard = () => {
 
   return (
     <Wrapper>
-      {isCategoryLoad?<Loader/>:<MenuTree data={categoryList}/>}
+      {isCategoryLoad ?<Loader/>:categoryList?.length==0? <NoDataFound msg={"No Tree Found"}/>:<MenuTree isCategoryLoad={isCategoryLoad} data={categoryList}/>}
     </Wrapper>
   );
 };
