@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Col, Form, FormGroup, Input, Label, Row } from 'reactstrap'
 import { useFormik } from 'formik'
 import { SeoFormValidation } from '../../helper/ValidationHelper/Validation'
@@ -15,8 +15,7 @@ import config from '../../../config'
 import { useRef } from 'react'
 
 const SeoForm = ({ title }) => {
-    const { slug, parentslug } = useParams()
-    const [decodeSlug, setDecodeSlug] = useState(false)
+    let { parentslug, childslug, gslug } = useParams()
     const [isSlugAdded, setIsSlugAdded] = useState(false)
 
     const allowedExtensionsImage = [".jpg", ".jpeg", ".png"]
@@ -106,12 +105,12 @@ const SeoForm = ({ title }) => {
         const file = e?.target?.files?.[0];
         if (!file) return;
 
-        const isFileValid = await validateOgFileImage(file, 2, allowedExtensionsImage);
-        console.log(validateOgFileImage, "validateOgFileImage")
-        if (!isFileValid?.isValid) {
-            setOgImgErr(isFileValid?.errorMessage);
-            return;
-        }
+        // const isFileValid = await validateOgFileImage(file, 2, allowedExtensionsImage);
+        // console.log(validateOgFileImage, "validateOgFileImage")
+        // if (!isFileValid?.isValid) {
+        //     setOgImgErr(isFileValid?.errorMessage);
+        //     return;
+        // }
 
         setOgImg(file);
         setShowOgImg(URL.createObjectURL(file));
@@ -146,6 +145,22 @@ const SeoForm = ({ title }) => {
 
 
 
+    const slugToCall = useMemo(() => {
+
+        return gslug ? gslug : childslug ? childslug : parentslug
+
+
+    }, [parentslug, childslug, gslug])
+
+
+
+
+
+
+
+
+
+
     const handleRefetch = (slug) => {
         queryClient.refetchQueries("parent-category-list")
         queryClient.refetchQueries(["category-list", 1])
@@ -172,17 +187,17 @@ const SeoForm = ({ title }) => {
         formData.append("custom_footer_scripts", data?.customFooterScripts)
         formData.append("google_cseid", data?.googleCSEId)
         formData.append("json_ld", JSON.stringify(structureData))
-        if (data?.ogImage) {
+        if (ogImg) {
             formData.append("og_image", ogImg)
         }
         if (isSlugAdded) {
-            formData.append("slugId", decodeSlug)
+            formData.append("slugId", slugToCall)
 
             updatemutation.mutate(formData)
 
             return
         }
-        formData.append("category_slug", decodeSlug)
+        formData.append("category_slug", slugToCall)
 
 
         mutation.mutate(formData)
@@ -218,7 +233,23 @@ const SeoForm = ({ title }) => {
                 handleRefetch(data?.data?.data?.slug)
 
 
-                navigate("/seo/" + data?.data?.data?.category?.parent?.slug + "/" + btoa(data?.data?.data?.slug))
+                if (slugToCall === parentslug) {
+                    parentslug = data?.data?.data?.slug;
+                }
+                if (slugToCall === childslug) {
+                    childslug = data?.data?.data?.slug;
+                }
+                if (slugToCall === gslug) {
+                    gslug = data?.data?.data?.slug;
+                }
+
+                // Construct the path based on the updated slugs
+                const path = `/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/details`;
+
+                // Navigate to the constructed path
+                navigate(path);
+
+
 
 
 
@@ -265,13 +296,25 @@ const SeoForm = ({ title }) => {
                 setShowOgImg(false)
                 console.log(data, "datadatadata")
 
-                // navigate("/blog/" + btoa(decodeSlug))
+                // navigate("/blog/" + btoa(slugToCall))
 
                 formik.resetForm()
                 handleRefetch(data?.data?.data?.slug)
+                if (slugToCall === parentslug) {
+                    parentslug = data?.data?.data?.slug;
+                }
+                if (slugToCall === childslug) {
+                    childslug = data?.data?.data?.slug;
+                }
+                if (slugToCall === gslug) {
+                    gslug = data?.data?.data?.slug;
+                }
 
-                navigate("/seo/" + data?.data?.data?.category?.parent?.slug + "/" + btoa(data?.data?.data?.slug))
+                // Construct the path based on the updated slugs
+                const path = `/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/details`;
 
+                // Navigate to the constructed path
+                navigate(path);
                 return;
             },
             onError: (err) => {
@@ -294,10 +337,10 @@ const SeoForm = ({ title }) => {
         data,
         isLoading,
     } = useCustomQuery({
-        queryKey: ['seo-details-by-slug', decodeSlug],
+        queryKey: ['seo-details-by-slug', slugToCall, gslug, childslug, parentslug],
         service: SeoServices.seoBySlug,
-        params: { slug: decodeSlug },
-        enabled: !!decodeSlug && !!parentslug,
+        params: { slug: slugToCall },
+        enabled: !!slugToCall,
         staleTime: 0,
         onSuccess: (data) => {
             // console.log(data, "titletitle")
@@ -371,41 +414,24 @@ const SeoForm = ({ title }) => {
     });
 
 
-    useEffect(() => {
-        if (formik.values.title && !isLoading && !data.status) {
-            const generatedSlug = slugify(formik.values.title, {
-                lower: true,
-                strict: true,
-            });
-            formik.setFieldValue("slug", generatedSlug);
-        }
-    }, [formik.values.title, decodeSlug, isLoading, data]);
+
+
+
 
 
 
 
     useEffect(() => {
-        try {
-            const decodeSlug = slug && atob(slug);
-
-            slug && setDecodeSlug(() => decodeSlug || "");
-        } catch (error) {
-            // console.error("Error decoding user ID:", error.message);
-            // Handle the error gracefully, e.g., display an error message to the user
-            navigate(-1)
-        }
-    }, [slug]);
-
-
-
-
-    useEffect(() => {
-        if (decodeSlug && !isLoading && !data?.status) {
-            formik.setFieldValue("title", decodeSlug);
-            formik.setFieldValue("slug", decodeSlug);
+        if (slugToCall && !isLoading && !data?.status) {
+            formik.setFieldValue("title", slugToCall);
+            formik.setFieldValue("slug", slugToCall);
 
         }
-    }, [decodeSlug, isLoading, data])
+    }, [slugToCall, isLoading, data])
+
+
+
+
 
 
 

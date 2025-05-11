@@ -11,11 +11,17 @@ const MenuTree = ({ data }) => {
     };
   };
 
-  const mapNode = (node) => ({
-    name: node.name,
-    link: `/seo/${node.slug}`, // Assuming each node has a 'slug' property
-    children: node.subMenu?.length ? node.subMenu.map(mapNode) : []
-  });
+  const mapNode = (node, parentSlug = '') => {
+    // Ensure each node has a valid 'slug' property, and construct the full path
+    const currentSlug = node.slug || ''; // Default to empty string if slug is missing
+    const fullLink = parentSlug ? `${parentSlug}/${currentSlug}` : currentSlug; // Build link dynamically
+
+    return {
+      name: node.name,
+      link: `/seo/${fullLink}`, // Ensure the URL is built correctly with slugs
+      children: node.subMenu?.length ? node.subMenu.map(subNode => mapNode(subNode, fullLink)) : []
+    };
+  };
 
   useEffect(() => {
     const hierarchyData = d3.hierarchy(convertToHierarchy(data));
@@ -91,33 +97,25 @@ const MenuTree = ({ data }) => {
 
     node.each(function(d) {
       const nodeSelection = d3.select(this);
-      // Check if the node is not in the last layer (i.e., it has children)
-      if (d.data.link && d.children) {
-        nodeSelection.append("a")
-          .attr("xlink:href", d.data.link)
-          .append("text")
-          .attr("dy", "0.31em")
-          .attr("x", d => d.children ? -10 : 10)
-          .attr("text-anchor", d => d.children ? "end" : "start")
-          .text(d => d.data.name)
-          .style("fill", "#007bff") // Highlight text color for clickable nodes
-          .style("font-weight", "bold")
-          .style("background-color", "rgba(255, 255, 0, 0.3)") // Highlight background color
-          .style("padding", "2px 5px")
-          .style("border-radius", "5px")
-          .style("border", "1px solid #007bff"); // Add border for emphasis
-      } else {
-        nodeSelection.append("text")
-          .attr("dy", "0.31em")
-          .attr("x", d => d.children ? -10 : 10)
-          .attr("text-anchor", d => d.children ? "end" : "start")
-          .text(d => d.data.name)
-          .style("fill", "#333")
-          .style("font-weight", "bold")
-          .style("background-color", "rgba(255, 255, 255, 0.7)")
-          .style("padding", "2px 5px")
-          .style("border-radius", "5px");
-      }
+      const nodeData = d.data;
+
+      // Make every node clickable by wrapping it in an <a> tag if it has a link
+      const linkElement = nodeSelection.append("a")
+        .attr("xlink:href", nodeData.link || "#") // Use "#" if no link exists
+        .attr("target", "_blank"); // Open the link in a new tab
+
+      // Add text to nodes
+      linkElement.append("text")
+        .attr("dy", "0.31em")
+        .attr("x", d => d.children ? -10 : 10)
+        .attr("text-anchor", d => d.children ? "end" : "start")
+        .text(d => d.data.name)
+        .style("fill", "#007bff") // Highlight text color for clickable nodes
+        .style("font-weight", "bold")
+        .style("background-color", "rgba(255, 255, 0, 0.3)") // Highlight background color
+        .style("padding", "2px 5px")
+        .style("border-radius", "5px")
+        .style("border", "1px solid #007bff"); // Add border for emphasis
     });
   }, [data]);
 

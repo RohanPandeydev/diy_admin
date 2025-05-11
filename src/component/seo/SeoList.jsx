@@ -11,39 +11,32 @@ import { Button } from 'reactstrap';
 import Swal from 'sweetalert2';
 import ButtonLoader from '../../utils/Loader/ButtonLoader';
 import CategoryServices from '../../services/CategoryServices';
+import SeoServices from '../../services/SeoServices';
 
-const SeoList = ({ parentslug }) => {
+const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
-    const [limit, setLimit] = useState(10)
-    const queryClient = useQueryClient()
-    const [rowId, setRowId] = useState("")
-
-    // Get page from URL, default to 1
-    const currentPage = parseInt(searchParams.get('page') || '1');
 
     const {
-        data: categoryList,
-        isLoading: isCategoryLoad,
-        refetch
+        data: seoDetails,
+        isLoading: isSeoDetailsLoad,
+        
     } = useCustomQuery({
-        queryKey: ['category-list', currentPage, parentslug],
-        service: CategoryServices.categoryList,
-        staleTime:0,
-        params: buildQueryString([{
-            key: "page", value: currentPage || 1,
-        }, {
-            key: "limit", value: limit || 10
-        },
-        {
-            key: "parent_slug", value: parentslug
-        }
+        queryKey: ['seo-by-slug', slugToCall, gslug, childslug, parentslug],
+        service: SeoServices.seoBySlug,
+        staleTime: 0,
 
-        ]),
+        params: { slug: slugToCall },
 
-        enabled: !!parentslug,
+
+
+
+        enabled: !!slugToCall,
         select: (data) => {
-            return data?.data;
+            if (!data?.data?.status) {
+                return []
+            }
+            return [data?.data?.data];
         },
         errorMsg: "",
         onSuccess: (data) => {
@@ -56,24 +49,16 @@ const SeoList = ({ parentslug }) => {
 
 
 
-
-
     const renderActions = (row) => (
         <>
-            <NavLink to={`/seo/${parentslug}/${btoa(row.slug)}`}>
+            <NavLink
+                to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/details`}
+            >
                 <Button color="info" size="sm" className="me-2">View</Button>
             </NavLink>
-            <NavLink to={`/seo/${parentslug}/update/${btoa(row.slug)}`}>
-                <Button color="primary" size="sm">Edit</Button>
-            </NavLink>
-
-
-
 
         </>
-    )
-
-
+    );
 
 
 
@@ -87,37 +72,80 @@ const SeoList = ({ parentslug }) => {
         {
             key: "name",
             label: "Name"
-
         },
         {
             key: "slug",
             label: "Slug"
+        },
+
+        {
+            key: "meta_title",
+            label: "Meta Title"
+        },
+        {
+            key: "meta_description",
+            label: "Meta Description"
+        },
+        {
+            key: "meta_keywords",
+            label: "Meta Keywords"
+        },
+        {
+            key: "canonical_url",
+            label: "Canonical URL"
+        },
+        {
+            key: "og_title",
+            label: "OG Title"
+        },
+        {
+            key: "og_description",
+            label: "OG Description"
+        },
+        {
+            key: "og_type",
+            label: "OG Type"
+        },
+        {
+            key: "robots",
+            label: "Robots"
+        },
+        {
+            key: "custom_head_scripts",
+            label: "Head Scripts",
+            Json: true,
+        },
+        {
+            key: "custom_footer_scripts",
+            label: "Footer Scripts",
+            Json: true,
 
         },
         {
-            key: "child",
-            label: "Sub Category",
-            nested:true
-
+            key: "google_cseid",
+            label: "Google CSE ID"
         },
-
         {
             key: "Action",
-            label: "",
-
-        },
-
-    ]
-
+            label: ""
+        }
+    ];
     return (
         <>
-            {
-                isCategoryLoad ? <Loader /> : categoryList?.data?.length == 0 ? <NoDataFound msg={"No Data Found"} /> : <>
-                    <TableView headers={headers} data={categoryList?.data} showActions={true} renderActions={renderActions} />
+            {isSeoDetailsLoad ? "" : <>
 
-                    <Pagination
-                        pagination={categoryList?.pagination}
-                    />
+
+                <NavLink
+                    to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}
+                >
+                    <Button color="primary" size="sm">{seoDetails?.length !== 0 ? "Edit" : "Add"}</Button>
+                </NavLink>
+            </>}
+            {
+                isSeoDetailsLoad ? <Loader /> : seoDetails?.length == 0 ? <NoDataFound msg={"No SEO Found"} /> : <>
+                    <TableView headers={headers} data={seoDetails} showActions={true} renderActions={renderActions} />
+
+
 
                 </>
             }

@@ -21,18 +21,17 @@ const RoutesPath = () => {
 
         {/* Blog */}
         <Route path="/cms/blog" element={<Blog />} />,
-        <Route path="/cms/blog/:slug" element={<BlogDetails />} />,
+        <Route path="/cms/blog/:slug" element={<BlogDetails />} cd />,
         <Route path="/cms/blog/add" element={<AddBlog />} />,
         <Route path="/cms/blog/update/:slug" element={<UpdateBlog />} />,
         {/* /end */}
 
-{/* SEO  */}
-        <Route path="/seo/:parentslug/update/:slug" element={<UpdateSeo />} />,
-        <Route path="/seo/:parentslug/add" element={<AddSeo />} />,
-        <Route path="/seo/:parentslug/:slug" element={<SeoDetails />} />,
-        <Route path="/seo/:parentslug" element={<Seo />} />,
-
-{/* end */}
+        {/* SEO  */}
+        <Route path="/seo/:parentslug?/:childslug?/:gslug?/update" element={<UpdateSeo />} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug?/add" element={<AddSeo />} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug/details" element={<SeoDetails />} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug?" element={<Seo />} />
+        {/* end */}
 
 
 

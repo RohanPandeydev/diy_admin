@@ -44,6 +44,9 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                 if (header.html) {
                                                     return <td key={colIndex}>{value && parse(value)}</td>
                                                 }
+                                                if (header.json) {
+                                                    return <td key={colIndex}>{value && JSON.parse(value)}</td>
+                                                }
 
                                                 if (header.category) {
                                                     return (
@@ -62,7 +65,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                 if (header.nested) {
                                                     return (
                                                         <td key={colIndex}>
-                                                            {value?.length==0?"N/A" :<button className="btn btn-sm btn-outline-primary" onClick={() => toggleRow(rowIndex, value)}>
+                                                            {value?.length == 0 ? "N/A" : <button className="btn btn-sm btn-outline-primary" onClick={() => toggleRow(rowIndex, value)}>
                                                                 {expandedRows[rowIndex] ? 'Hide' : 'Show'} Sub Category
                                                             </button>}
                                                         </td>
