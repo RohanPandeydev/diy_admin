@@ -189,7 +189,7 @@ const BlogDetail = ({ decodeSlug }) => {
 
             <div className="order-desc-info-box">
               <h3>Category:
-                <NavLink   to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + btoa(blogDetails?.category?.slug)}>
+                <NavLink   to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + blogDetails?.category?.slug}>
                   {blogDetails?.category?.name}
 
                 </NavLink>

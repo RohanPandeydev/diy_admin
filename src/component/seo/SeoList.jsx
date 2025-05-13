@@ -54,7 +54,7 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
             <NavLink
                 to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/details`}
             >
-                <Button color="info" size="sm" className="me-2">View</Button>
+                <Button color="info" size="sm" className="me-2">View </Button>
             </NavLink>
 
         </>
@@ -102,25 +102,8 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
             key: "og_description",
             label: "OG Description"
         },
-        {
-            key: "og_type",
-            label: "OG Type"
-        },
-        {
-            key: "robots",
-            label: "Robots"
-        },
-        {
-            key: "custom_head_scripts",
-            label: "Head Scripts",
-            Json: true,
-        },
-        {
-            key: "custom_footer_scripts",
-            label: "Footer Scripts",
-            Json: true,
-
-        },
+     
+        
         {
             key: "google_cseid",
             label: "Google CSE ID"

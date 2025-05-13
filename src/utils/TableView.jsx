@@ -39,7 +39,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                     <React.Fragment key={rowIndex}>
                                         <tr>
                                             {headers.map((header, colIndex) => {
-                                                const value = row[header?.key]
+                                                const value = row[header?.key]||"N/A"
 
                                                 if (header.html) {
                                                     return <td key={colIndex}>{value && parse(value)}</td>

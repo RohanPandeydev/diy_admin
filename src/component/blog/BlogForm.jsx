@@ -314,7 +314,7 @@ const BlogForm = ({ title, categorySlug }) => {
                 cacheOptions
                 defaultOptions
                 loadOptions={handleSearchCategory}
-                placeholder="Search Category Number..."
+                placeholder="Search Category..."
                 value={
                   formik.values.category_id
                     ? {

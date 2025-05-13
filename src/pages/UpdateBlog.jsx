@@ -45,7 +45,7 @@ const UpdateBlog = () => {
 
     return (
         <Wrapper>
-            {isCategoryLoad ? <Loader /> : !(categoryList?.id) ? "No Category Found " : <BlogForm title={"Add Blog"} categorySlug={categoryList?.slug} />}
+            {isCategoryLoad ? <Loader /> : !(categoryList?.id) ? "No Category Found " : <BlogForm title={"Update Blog"} categorySlug={categoryList?.slug} />}
 
         </Wrapper>
     )

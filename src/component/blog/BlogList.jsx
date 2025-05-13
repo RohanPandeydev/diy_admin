@@ -1,23 +1,70 @@
 import React, { useState } from 'react'
 import TableView from '../../utils/TableView'
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { buildQueryString } from '../../utils/BuildQuery';
 import Pagination from '../../utils/Pagination';
 import { useCustomQuery } from '../../utils/QueryHooks';
 import BlogServices from '../../services/BlogServices';
 import Loader from '../../utils/Loader/Loader';
 import NoDataFound from '../../utils/NoDataFound';
-import { Button } from 'reactstrap';
+import { Button, Col, FormGroup, Input, Row } from 'reactstrap';
 import Swal from 'sweetalert2';
 import ButtonLoader from '../../utils/Loader/ButtonLoader';
+import CategoryServices from '../../services/CategoryServices';
+import AsyncSelect from 'react-select/async';
+import { useEffect } from 'react';
 
 const BlogList = () => {
+    const navigate=useNavigate()
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const [limit, setLimit] = useState(10)
     const queryClient = useQueryClient()
     const [rowId, setRowId] = useState("")
+        const [key, setKey] = useState(0); // Add this state to force re-render
+
+    const [searchFilter, setSearchFilter] = useState({
+        search: "",
+        category: "",
+        categoryName: "",
+        is_published: ""
+
+
+    })
+
+
+    const {
+        data: categoryList,
+        isLoading: isCategoryLoad,
+    } = useCustomQuery({
+        queryKey: ['category-list',],
+        service: CategoryServices.categoryList,
+        params: buildQueryString([{
+            key: "page", value: 1,
+        }, {
+            key: "limit", value: 10
+        },
+        {
+            key: "filter", value: "name"
+        },
+        {
+            key: "search", value: "Blog & News"
+        }
+
+        ]),
+
+        select: (data) => {
+            if (data?.data?.data?.length > 0) {
+                return data?.data?.data[0]
+            }
+            return {}
+        },
+        errorMsg: "",
+        onSuccess: (data) => {
+
+        }
+    });
 
     // Get page from URL, default to 1
     const currentPage = parseInt(searchParams.get('page') || '1');
@@ -26,12 +73,21 @@ const BlogList = () => {
         data: blogList,
         isLoading: isBlogLoad,
     } = useCustomQuery({
-        queryKey: ['blog-list', currentPage],
+        queryKey: ['blog-list', currentPage, searchFilter],
         service: BlogServices.blogList,
         params: buildQueryString([{
             key: "page", value: currentPage || 1,
         }, {
             key: "limit", value: limit || 10
+        },
+        {
+            key: "search", value: searchFilter?.search
+        },
+        {
+            key: "is_published", value: searchFilter?.is_published
+        },
+        {
+            key: "category", value: searchFilter?.category
         }
 
         ]),
@@ -46,7 +102,76 @@ const BlogList = () => {
 
 
 
+    const handleSearch = (e) => {
+        const name = e.target.name
+        const value = e.target?.value
 
+        setSearchFilter({
+            ...searchFilter, [name]: value
+        })
+
+        // Update search parameters
+        searchParams.set('page', '1'); // Reset page to 1 on filter change
+
+        // Navigate to new URL with updated search params
+        navigate(`${location.pathname}?${searchParams.toString()}`);
+
+
+
+
+    }
+
+    const handleResetFilter = () => {
+        setSearchFilter({
+            search: "",
+            category: "",
+            categoryName: "",
+            is_published: " "
+
+        })
+        // Update search parameters
+        searchParams.set('page', '1'); // Reset page to 1 on filter change
+
+        // Navigate to new URL with updated search params
+        navigate(`${location.pathname}?${searchParams.toString()}`);
+    }
+
+
+ const handleSearchCategory = async (inputValue) => {
+        try {
+            // Only call API if categoryList.slug exists
+            if (!categoryList?.slug) {
+                return []; // Return empty if slug is not available
+            }
+
+            const response = await CategoryServices.categoryList(buildQueryString([{
+                key: "page", value: 1,
+            }, {
+                key: "limit", value: 10
+            }, {
+                key: "parent_slug", value: categoryList?.slug
+            }, {
+                key: "filter", value: "slug"
+            }, {
+                key: "search", value: inputValue
+            }]));
+
+            return response?.data?.data?.map((category) => ({
+                label: category.name,
+                value: category.id,
+            })) || [];
+        } catch (error) {
+            console.error("Error fetching Category list:", error);
+            return [];
+        }
+    }
+
+    // Reset the select component when the slug changes
+    useEffect(() => {
+        // Whenever categoryList.slug changes, it will trigger a re-render of AsyncSelect
+        console.log('Category slug changed:', categoryList?.slug);
+        setKey(prevKey => prevKey + 1); // Force re-render of AsyncSelect
+    }, [categoryList?.slug]);  // Watch for changes in categoryList.slug
 
 
     const handleSoftDelete = (row) => {
@@ -144,7 +269,7 @@ const BlogList = () => {
 
 
 
-                queryClient.refetchQueries(["blog-list", 1])
+                queryClient.refetchQueries(["blog-list", currentPage])
                 return;
             },
             onError: (err) => {
@@ -181,7 +306,7 @@ const BlogList = () => {
 
 
 
-                queryClient.refetchQueries(["blog-list", 1])
+                queryClient.refetchQueries(["blog-list", currentPage])
                 return;
             },
             onError: (err) => {
@@ -198,7 +323,7 @@ const BlogList = () => {
         {
             key: "category",
             label: "Category",
-            category:true
+            category: true
 
         },
         {
@@ -245,6 +370,72 @@ const BlogList = () => {
     ]
     return (
         <>
+            <Row>            <Col md="6" className="mb-2">
+                <FormGroup className="common-formgroup">
+                    <AsyncSelect
+                key={key} // Add key prop to force re-render when category slug changes
+                cacheOptions
+                defaultOptions
+                isDisabled={isCategoryLoad || !categoryList?.slug}
+                loadOptions={handleSearchCategory}
+                placeholder={categoryList?.slug ? "Search Category..." : "Select parent category first"}
+                value={
+                    searchFilter?.category
+                        ? {
+                            label: searchFilter?.categoryName,
+                            value: searchFilter?.category,
+                        }
+                        : null
+                }
+                onChange={(selectedOption) => {
+                    setSearchFilter({
+                        ...searchFilter, 
+                        category: selectedOption?.value, 
+                        categoryName: selectedOption?.label
+                    });
+                }}
+            />
+            
+
+                </FormGroup>
+            </Col>
+
+
+
+
+                <Col md="6" className="mb-2">
+
+                    <Input
+                        type="text"
+                        name="search"
+                        autoComplete="new-slug"
+                        placeholder='Search...'
+                        onChange={handleSearch}
+                        value={searchFilter?.search}
+                    />
+
+                </Col>
+
+                <Col md="6" className="mb-2">
+
+                    <Input
+                        type="select"
+                        name="is_published"
+                        onChange={handleSearch}
+                        value={searchFilter?.is_published}
+
+
+                    >
+
+                        <option value={""}>Select Status</option>
+                        <option value={true}>Published</option>
+                        <option value={false}>Unpublished</option>
+                    </Input>
+                </Col>
+
+                <Button type="click" onClick={handleResetFilter}>Reset</Button>
+            </Row>
+
             {
                 isBlogLoad ? <Loader /> : blogList?.data?.length == 0 ? <NoDataFound msg={"No Blog Found"} /> : <>
                     <TableView headers={headers} data={blogList?.data} showActions={true} renderActions={renderActions} />
