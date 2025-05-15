@@ -20,7 +20,7 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
     const {
         data: seoDetails,
         isLoading: isSeoDetailsLoad,
-        
+
     } = useCustomQuery({
         queryKey: ['seo-by-slug', slugToCall, gslug, childslug, parentslug],
         service: SeoServices.seoBySlug,
@@ -70,8 +70,8 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
 
     const headers = [
         {
-            key: "name",
-            label: "Name"
+            key: "title",
+            label: "Title"
         },
         {
             key: "slug",
@@ -102,15 +102,16 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
             key: "og_description",
             label: "OG Description"
         },
-     
-        
+
+
         {
             key: "google_cseid",
             label: "Google CSE ID"
         },
         {
             key: "Action",
-            label: ""
+            label: "",
+            isAction: true,
         }
     ];
     return (

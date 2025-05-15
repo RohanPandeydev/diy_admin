@@ -364,6 +364,7 @@ const BlogList = () => {
         {
             key: "Action",
             label: "",
+            isAction:true
 
         },
 

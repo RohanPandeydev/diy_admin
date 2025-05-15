@@ -39,7 +39,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                     <React.Fragment key={rowIndex}>
                                         <tr>
                                             {headers.map((header, colIndex) => {
-                                                const value = row[header?.key]||"N/A"
+                                                const value = row[header?.key]
 
                                                 if (header.html) {
                                                     return <td key={colIndex}>{value && parse(value)}</td>
@@ -52,7 +52,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                     return (
                                                         <td key={colIndex}>
                                                             <NavLink to={"/seo/" + value?.parent?.slug + "/" + btoa(value?.slug)}>
-                                                                {value?.name}
+                                                                {value?.name || "N/A"}
                                                             </NavLink>
                                                         </td>
                                                     )
@@ -108,7 +108,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                                 </label>
                                                             </>
                                                         ) : (
-                                                            value
+                                                           header?.isAction?value||"":value||"N/A"
                                                         )}
                                                     </td>
                                                 )

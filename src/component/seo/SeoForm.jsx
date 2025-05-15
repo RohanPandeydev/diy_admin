@@ -384,10 +384,10 @@ const SeoForm = ({ title }) => {
 
                 }
             }
-            if (data?.og_image) {
+            if (data?.data?.og_image) {
 
 
-                setShowOgImg(config.apiUrl + "/" + data?.og_image)
+                setShowOgImg(config.apiUrl + "/" + data?.data?.og_image)
             }
 
             setIsSlugAdded(true)
