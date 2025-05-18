@@ -19,6 +19,8 @@ import { useMutation } from "@tanstack/react-query";
 import StorageData from "../helper/storagehelper/StorageData";
 import AuthServices from "../services/AuthServices";
 import Loader from "../utils/Loader/Loader";
+import config from "../../config";
+import secureLocalStorage from "react-secure-storage";
 
 const Login = () => {
   const location = useLocation();
@@ -50,10 +52,16 @@ const Login = () => {
           return
         }
 
-        StorageData.setToken(data?.data?.token
-        );
-        StorageData.setData(data?.data?.user
-        );
+        StorageData.setToken(data?.data?.token);
+        StorageData.setData(data?.data?.user);
+
+        secureLocalStorage.removeItem(config.localStorageUserPermission);
+
+        if (data?.data?.user?.role == 0) {
+          StorageData.setUserPermission(data?.data?.permission
+          );
+        }
+
         setLoader(true);
         Swal.fire({
           title: "Successful",

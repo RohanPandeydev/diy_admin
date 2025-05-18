@@ -22,9 +22,33 @@ export const BlogFormValidation = Yup.object().shape({
     .required('Content is required')
     .min(50, 'Content must be at least 50 characters'),
 
+
   is_published: Yup.boolean()
 })
+export const StaffFormValidation = Yup.object().shape({
+  first_name: Yup.string()
+    .required('First name is required')
+    .max(64, 'First name must be at most 64 characters'),
 
+  last_name: Yup.string()
+    .required('Last name is required')
+    .max(64, 'Last name must be at most 64 characters'),
+  // password: Yup.string().required("Password is required"),
+
+
+  email: Yup.string()
+    .required('Email is required')
+    .email('Enter a valid email')
+    .max(128, 'Email must be at most 128 characters'),
+
+  designation: Yup.string()
+    .required('Designation is required')
+    .max(128, 'Designation must be at most 128 characters'),
+
+  phone_number: Yup.string()
+    .max(128, 'Phone number must be at most 128 characters'),
+
+});
 
 export const SeoFormValidation = Yup.object().shape({
   title: Yup.string()

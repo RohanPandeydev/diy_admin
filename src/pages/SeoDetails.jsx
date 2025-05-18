@@ -4,6 +4,7 @@ import { Button, Col, Row } from 'reactstrap'
 import { NavLink, useNavigate, useParams } from 'react-router-dom'
 import BlogDetail from '../component/blog/BlogDetail'
 import SeoDetail from '../component/seo/SeoDetail'
+import { ProtectedMethod } from '../guard/RBACGuard'
 const SeoDetails = () => {
   const { parentslug, childslug, gslug } = useParams()
   const [decodeSlug, setDecodeSlug] = useState(false)
@@ -31,9 +32,12 @@ const SeoDetails = () => {
     <Wrapper>
       <Row>
         <Col md={2}>
-          <NavLink to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}>
-            <Button color="primary" size="sm">Edit</Button>
-          </NavLink>
+          <ProtectedMethod moduleName={"seo"} action='update'>
+
+            <NavLink to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}>
+              <Button color="primary" size="sm">Edit</Button>
+            </NavLink>
+          </ProtectedMethod>
         </Col>
 
 

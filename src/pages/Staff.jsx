@@ -1,12 +1,11 @@
-import React from 'react'
-import BlogList from '../component/blog/BlogList'
 import Wrapper from '../layouts/Wrapper'
 import { Button } from 'reactstrap'
 import { NavLink } from 'react-router-dom'
+import StaffList from '../component/staff/StaffList'
 import { ProtectedMethod } from '../guard/RBACGuard'
 
 
-const Blog = () => {
+const Staff = () => {
 
 
 
@@ -18,14 +17,15 @@ const Blog = () => {
 
     return (
         <Wrapper>
-            <ProtectedMethod moduleName={"blog"} action='create'>
-                <NavLink to={"/cms/blog/add"}>
+            <ProtectedMethod moduleName={"staff"} action='create'>
+
+                <NavLink to={"/management/staff/add"}>
                     <Button type='button' className='btn-main'>Add</Button>
                 </NavLink>
             </ProtectedMethod>
-            <BlogList />
+            <StaffList />
         </Wrapper>
     )
 }
 
-export default Blog
+export default Staff

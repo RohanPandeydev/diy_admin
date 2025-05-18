@@ -1,4 +1,4 @@
-import {  FiUser } from "react-icons/fi";
+import { FiUser } from "react-icons/fi";
 
 
 const SideBarMenuList = [
@@ -18,6 +18,15 @@ const SideBarMenuList = [
         icon: <FiUser />,
         children: [
             { name: "Blog", id: 1, feature: "blog", link: "/blog" },
+            // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
+        ],
+    },
+    {
+        parent: "Staff Management",
+        id: 1,
+        icon: <FiUser />,
+        children: [
+            { name: "Staff", id: 1, feature: "staff", link: "/management/staff" },
             // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
         ],
     },

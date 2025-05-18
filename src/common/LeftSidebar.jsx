@@ -7,13 +7,16 @@ import { useCustomQuery } from "../utils/QueryHooks";
 import { buildQueryString } from "../utils/BuildQuery";
 import CategoryServices from "../services/CategoryServices";
 import Swal from "sweetalert2";
+import useCustomContext from "../contexts/Context";
 
 const LeftSidebar = ({ toggleMenu }) => {
   const location = useLocation();
-  const nav = useNavigate();
   const [activeParent, setActiveParent] = useState(null);
   const [menuList, setMenuList] = useState([]);
   const [openSubMenus, setOpenSubMenus] = useState({}); // Track open submenus by ID
+  const { userPermission, adminId } = useCustomContext()
+
+  console.log(userPermission, "userPermission")
 
   const {
     data: categoryList,
@@ -44,7 +47,17 @@ const LeftSidebar = ({ toggleMenu }) => {
     id: 1,
     icon: <FiUser />,
     children: [
-      { name: "Blog", id: 1, feature: "cms-blog", link: "/cms/blog" }
+      { name: "Blog", id: 1, rbac: "blog", feature: "blog", link: "/cms/blog" }
+    ],
+
+  };
+  const staffManagementSection = {
+    parent: "Staff Management",
+    id: 1,
+    icon: <FiUser />,
+    children: [
+      { name: "Staff", id: 1, rbac: "staff", feature: "staff", link: "/management/staff" },
+      // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
     ],
   };
 
@@ -57,6 +70,7 @@ const LeftSidebar = ({ toggleMenu }) => {
           name: cat.name,
           id: cat.id,
           feature: cat.slug,
+          rbac: "seo",
           link: `/seo/${currentSlugPath}`,
           subMenu: cat.subMenu ? buildSeoChildren(cat.subMenu, currentSlugPath) : [],
         };
@@ -70,57 +84,86 @@ const LeftSidebar = ({ toggleMenu }) => {
       children: buildSeoChildren(categoryList || []),
     };
 
-    setMenuList([cmsSection, seoSection]);
+
+
+    setMenuList([cmsSection, staffManagementSection, seoSection]);
   }, [categoryList]);
 
   useEffect(() => {
-    menuList?.forEach((item) => {
-      if (item.children) {
-        item.children.forEach((child) => {
-          // Base route match for highlighting
-          if (
-            location.pathname.toLowerCase().startsWith(child.link.toLowerCase())
-          ) {
-            setActiveParent(item.parent);
-            // Open the submenu if the route matches
-            setOpenSubMenus((prev) => ({ ...prev, [child.id]: true }));
+    const buildPermissionMap = () => {
+      const map = {};
+      userPermission?.forEach((perm) => {
+        const moduleName = perm?.permission?.module?.name?.toLowerCase();
+        const action = perm?.permission?.action;
+        if (moduleName) {
+          if (!map[moduleName]) {
+            map[moduleName] = [];
           }
+          map[moduleName].push(action);
+        }
+      });
+      return map;
+    };
 
-          // Match for `/update` or `/details` routes
-          if (
-            location.pathname.toLowerCase().includes(child.link.toLowerCase()) &&
-            (location.pathname.includes("/update") || location.pathname.includes("/details"))
-          ) {
-            setActiveParent(item.parent);
-            // Open the submenu if the route matches
-            setOpenSubMenus((prev) => ({ ...prev, [child.id]: true }));
-          }
+    const permissionMap = buildPermissionMap();
 
-          if (child.subMenu) {
-            child.subMenu.forEach((grandchild) => {
-              if (
-                location.pathname.toLowerCase().startsWith(grandchild.link.toLowerCase())
-              ) {
-                setActiveParent(item.parent);
-                // Open the submenu if the route matches
-                setOpenSubMenus((prev) => ({ ...prev, [grandchild.id]: true }));
-              }
+    const filterChildrenByPermission = (children) => {
+      if (adminId) return children;
+      return children.filter((item) => {
+        const rbacKey = item.rbac?.toLowerCase();
+        return permissionMap[rbacKey] && permissionMap[rbacKey].length > 0;
+      });
+    };
 
-              // Handle submenus with `/update` or `/details` routes
-              if (
-                location.pathname.toLowerCase().includes(grandchild.link.toLowerCase()) &&
-                (location.pathname.includes("/update") || location.pathname.includes("/details"))
-              ) {
-                setActiveParent(item.parent);
-                // Open the submenu if the route matches
-                setOpenSubMenus((prev) => ({ ...prev, [grandchild.id]: true }));
-              }
-            });
-          }
+    const cmsSection = {
+      parent: "CMS",
+      id: 1,
+      icon: <FiUser />,
+      children: filterChildrenByPermission([
+        { name: "Blog", id: 1, rbac: "blog", feature: "blog", link: "/cms/blog" }
+      ]),
+    };
+
+    const staffManagementSection = {
+      parent: "Staff Management",
+      id: 2,
+      icon: <FiUser />,
+      children: filterChildrenByPermission([
+        { name: "Staff", id: 1, rbac: "staff", feature: "staff", link: "/management/staff" },
+      ]),
+    };
+
+    const buildSeoChildren = (categories, parentSlug = "") => {
+      if (adminId || permissionMap["seo"]) {
+        return categories.map((cat) => {
+          const currentSlugPath = parentSlug ? `${parentSlug}/${cat.slug}` : cat.slug;
+
+          return {
+            name: cat.name,
+            id: cat.id,
+            feature: cat.slug,
+            rbac: "seo",
+            link: `/seo/${currentSlugPath}`,
+            subMenu: cat.subMenu ? buildSeoChildren(cat.subMenu, currentSlugPath) : [],
+          };
         });
       }
-    });
-  }, [location.pathname, menuList]);
+      return [];
+    };
+
+    const seoSection = {
+      parent: "SEO",
+      id: 3,
+      icon: <FiUser />,
+      children: buildSeoChildren(categoryList || []),
+    };
+
+    const updatedMenuList = [cmsSection, staffManagementSection, seoSection].filter(
+      (section) => section.children?.length
+    );
+
+    setMenuList(updatedMenuList);
+  }, [categoryList, userPermission]);
 
   const handleParentClick = (parent) => {
     setActiveParent((prev) => (prev === parent ? null : parent));

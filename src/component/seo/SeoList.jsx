@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 import ButtonLoader from '../../utils/Loader/ButtonLoader';
 import CategoryServices from '../../services/CategoryServices';
 import SeoServices from '../../services/SeoServices';
+import { ProtectedMethod } from '../../guard/RBACGuard';
 
 const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
     const location = useLocation();
@@ -118,12 +119,14 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
         <>
             {isSeoDetailsLoad ? "" : <>
 
+                <ProtectedMethod moduleName={"seo"} action='update'>
 
-                <NavLink
-                    to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}
-                >
-                    <Button color="primary" size="sm">{seoDetails?.length !== 0 ? "Edit" : "Add"}</Button>
-                </NavLink>
+                    <NavLink
+                        to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}
+                    >
+                        <Button color="primary" size="sm">{seoDetails?.length !== 0 ? "Edit" : "Add"}</Button>
+                    </NavLink>
+                </ProtectedMethod>
             </>}
             {
                 isSeoDetailsLoad ? <Loader /> : seoDetails?.length == 0 ? <NoDataFound msg={"No SEO Found"} /> : <>

@@ -12,6 +12,12 @@ class StorageData {
       JSON.stringify(data)
     );
   }
+  setUserPermission(data) {
+    secureLocalStorage.setItem(
+      config?.localStorageUserPermission,
+      JSON.stringify(data)
+    );
+  }
   getToken() {
     return secureLocalStorage.getItem(config.localStorageUserToken);
   }
@@ -22,9 +28,15 @@ class StorageData {
       secureLocalStorage.getItem(config?.localStorageUserDetails)
     );
   }
+  getUserPermission() {
+    return JSON.parse(
+      secureLocalStorage.getItem(config?.localStorageUserPermission)
+    );
+  }
   removeData() {
     secureLocalStorage.removeItem(config?.localStorageUserDetails);
     secureLocalStorage.removeItem(config.localStorageUserToken);
+    secureLocalStorage.removeItem(config.localStorageUserPermission);
     return;
   }
 }

@@ -10,6 +10,7 @@ import moment from 'moment'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import ButtonLoader from '../../utils/Loader/ButtonLoader'
 import { NavLink, useNavigate } from 'react-router-dom'
+import ProtectedRoute, { ProtectedMethod } from '../../guard/RBACGuard'
 
 const BlogDetail = ({ decodeSlug }) => {
 
@@ -181,7 +182,7 @@ const BlogDetail = ({ decodeSlug }) => {
   return (
     <>
 
-      {isLoading ? null : <Button color="danger" className='mx-2' size="sm" disabled={deletemutation?.isLoading} onClick={() => handleSoftDelete(blogDetails)}>{deletemutation?.isLoading ? <ButtonLoader /> : "Delete"}</Button>}
+      {isLoading ? null : <ProtectedMethod  moduleName={"blog"} action='delete'><Button color="danger" className='mx-2' size="sm" disabled={deletemutation?.isLoading} onClick={() => handleSoftDelete(blogDetails)}>{deletemutation?.isLoading ? <ButtonLoader /> : "Delete"}</Button></ProtectedMethod>}
 
       {
         isLoading ? <Loader /> : <Row>
@@ -189,7 +190,7 @@ const BlogDetail = ({ decodeSlug }) => {
 
             <div className="order-desc-info-box">
               <h3>Category:
-                <NavLink   to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + blogDetails?.category?.slug}>
+                <NavLink to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + blogDetails?.category?.slug}>
                   {blogDetails?.category?.name}
 
                 </NavLink>

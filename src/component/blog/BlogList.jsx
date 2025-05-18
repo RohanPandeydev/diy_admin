@@ -14,15 +14,16 @@ import ButtonLoader from '../../utils/Loader/ButtonLoader';
 import CategoryServices from '../../services/CategoryServices';
 import AsyncSelect from 'react-select/async';
 import { useEffect } from 'react';
+import ProtectedRoute, { ProtectedMethod } from '../../guard/RBACGuard';
 
 const BlogList = () => {
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const [limit, setLimit] = useState(10)
     const queryClient = useQueryClient()
     const [rowId, setRowId] = useState("")
-        const [key, setKey] = useState(0); // Add this state to force re-render
+    const [key, setKey] = useState(0); // Add this state to force re-render
 
     const [searchFilter, setSearchFilter] = useState({
         search: "",
@@ -137,7 +138,7 @@ const BlogList = () => {
     }
 
 
- const handleSearchCategory = async (inputValue) => {
+    const handleSearchCategory = async (inputValue) => {
         try {
             // Only call API if categoryList.slug exists
             if (!categoryList?.slug) {
@@ -175,7 +176,6 @@ const BlogList = () => {
 
 
     const handleSoftDelete = (row) => {
-        setRowId(row?.id)
         if (row.is_published) {
             Swal.fire({
                 title: "Unpublish Required",
@@ -195,6 +195,8 @@ const BlogList = () => {
                 confirmButtonText: "Yes, delete it",
             }).then((result) => {
                 if (result.isConfirmed) {
+                    setRowId(row?.id)
+
                     deletemutation.mutate({ id: row?.id });
                 }
             });
@@ -207,11 +209,14 @@ const BlogList = () => {
             <NavLink to={`/cms/blog/${btoa(row.slug)}`}>
                 <Button color="info" size="sm" className="me-2">View</Button>
             </NavLink>
-            <NavLink to={`/cms/blog/update/${btoa(row.slug)}`}>
-                <Button color="primary" size="sm">Edit</Button>
-            </NavLink>
-
-            <Button color="danger" className='mx-2' size="sm" disabled={row.id == rowId || deletemutation?.isLoading} onClick={() => handleSoftDelete(row)}>{row.id == rowId || deletemutation?.isLoading ? <ButtonLoader /> : "Delete"}</Button>
+            <ProtectedMethod moduleName={"blog"} action='update'>
+                <NavLink to={`/cms/blog/update/${btoa(row.slug)}`}>
+                    <Button color="primary" size="sm">Edit</Button>
+                </NavLink>
+            </ProtectedMethod>
+            <ProtectedMethod moduleName={"blog"} action='delete'>
+                <Button color="danger" className='mx-2' size="sm" disabled={row.id == rowId || deletemutation?.isLoading} onClick={() => handleSoftDelete(row)}>{row.id == rowId || deletemutation?.isLoading ? <ButtonLoader /> : "Delete"}</Button>
+            </ProtectedMethod>
 
 
 
@@ -364,7 +369,7 @@ const BlogList = () => {
         {
             key: "Action",
             label: "",
-            isAction:true
+            isAction: true
 
         },
 
@@ -374,29 +379,29 @@ const BlogList = () => {
             <Row>            <Col md="6" className="mb-2">
                 <FormGroup className="common-formgroup">
                     <AsyncSelect
-                key={key} // Add key prop to force re-render when category slug changes
-                cacheOptions
-                defaultOptions
-                isDisabled={isCategoryLoad || !categoryList?.slug}
-                loadOptions={handleSearchCategory}
-                placeholder={categoryList?.slug ? "Search Category..." : "Select parent category first"}
-                value={
-                    searchFilter?.category
-                        ? {
-                            label: searchFilter?.categoryName,
-                            value: searchFilter?.category,
+                        key={key} // Add key prop to force re-render when category slug changes
+                        cacheOptions
+                        defaultOptions
+                        isDisabled={isCategoryLoad || !categoryList?.slug}
+                        loadOptions={handleSearchCategory}
+                        placeholder={categoryList?.slug ? "Search Category..." : "Select parent category first"}
+                        value={
+                            searchFilter?.category
+                                ? {
+                                    label: searchFilter?.categoryName,
+                                    value: searchFilter?.category,
+                                }
+                                : null
                         }
-                        : null
-                }
-                onChange={(selectedOption) => {
-                    setSearchFilter({
-                        ...searchFilter, 
-                        category: selectedOption?.value, 
-                        categoryName: selectedOption?.label
-                    });
-                }}
-            />
-            
+                        onChange={(selectedOption) => {
+                            setSearchFilter({
+                                ...searchFilter,
+                                category: selectedOption?.value,
+                                categoryName: selectedOption?.label
+                            });
+                        }}
+                    />
+
 
                 </FormGroup>
             </Col>
