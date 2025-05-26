@@ -519,7 +519,7 @@ const SeoForm = ({ title }) => {
                                     <Label>Slug *</Label>
                                     <Input
                                         type="text"
-                                        {...(!isSlugAdded ? formik.getFieldProps("slug") : {})}
+                                        {...( formik.getFieldProps("slug"))}
                                         autoComplete="new-slug"
                                         disabled={isSlugAdded}
                                         className={formik.touched.slug && formik.errors.slug ? "is-invalid" : ""}
