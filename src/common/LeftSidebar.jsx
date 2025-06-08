@@ -86,7 +86,7 @@ const LeftSidebar = ({ toggleMenu }) => {
 
 
 
-    setMenuList([cmsSection, staffManagementSection, seoSection]);
+    setMenuList([cmsSection, seoSection]); //add staffmanagemnrt
   }, [categoryList]);
 
   useEffect(() => {
@@ -158,10 +158,10 @@ const LeftSidebar = ({ toggleMenu }) => {
       children: buildSeoChildren(categoryList || []),
     };
 
-    const updatedMenuList = [cmsSection, staffManagementSection, seoSection].filter(
+    const updatedMenuList = [cmsSection, seoSection].filter(
       (section) => section.children?.length
     );
-
+//add staffmanagemnrt in pdte menulist
     setMenuList(updatedMenuList);
   }, [categoryList, userPermission]);
 

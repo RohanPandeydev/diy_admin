@@ -21,15 +21,15 @@ const SideBarMenuList = [
             // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
         ],
     },
-    {
-        parent: "Staff Management",
-        id: 1,
-        icon: <FiUser />,
-        children: [
-            { name: "Staff", id: 1, feature: "staff", link: "/management/staff" },
-            // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
-        ],
-    },
+    // {
+    //     parent: "Staff Management",
+    //     id: 1,
+    //     icon: <FiUser />,
+    //     children: [
+    //         { name: "Staff", id: 1, feature: "staff", link: "/management/staff" },
+    //         // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
+    //     ],
+    // },
 
 
     // {
