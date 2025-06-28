@@ -25,23 +25,23 @@ const RoutesPath = () => {
         <Route path="/login" element={<Login />} />,
 
         {/* Staff */}
-        <Route path="/management/staff" element={<ProtectedRoute moduleName={"staff"} action="view"><Staff /></ProtectedRoute>} />,
-        <Route path="/management/staff/:id" element={<ProtectedRoute action="view" moduleName={"staff"}><StaffDetails /></ProtectedRoute>} />,
-        <Route path="/management/staff/add" element={<ProtectedRoute action="add" moduleName={"staff"}><AddStaff /></ProtectedRoute>} />,
-        <Route path="/management/staff/update/:id" element={<ProtectedRoute action="update" moduleName={"staff"}><UpdateStaff /></ProtectedRoute>} />,
+        <Route path="/management/staff" element={<RequireAuth moduleName={"staff"} action="view"><Staff /></RequireAuth>} />,
+        <Route path="/management/staff/:id" element={<RequireAuth action="view" moduleName={"staff"}><StaffDetails /></RequireAuth>} />,
+        <Route path="/management/staff/add" element={<RequireAuth action="add" moduleName={"staff"}><AddStaff /></RequireAuth>} />,
+        <Route path="/management/staff/update/:id" element={<RequireAuth action="update" moduleName={"staff"}><UpdateStaff /></RequireAuth>} />,
         {/* /end */}
         {/* Blog */}
-        <Route path="/cms/blog" element={<ProtectedRoute moduleName={"blog"} action="view"><Blog /></ProtectedRoute>} />,
-        <Route path="/cms/blog/:slug" element={<ProtectedRoute moduleName={"blog"} action="view"><BlogDetails /></ProtectedRoute>} />,
-        <Route path="/cms/blog/add" element={<ProtectedRoute moduleName={"blog"} action="create"><AddBlog /></ProtectedRoute>} />,
-        <Route path="/cms/blog/update/:slug" element={<ProtectedRoute moduleName={"blog"} action="update"><UpdateBlog /></ProtectedRoute>} />,
+        <Route path="/cms/blog" element={<RequireAuth moduleName={"blog"} action="view"><Blog /></RequireAuth>} />,
+        <Route path="/cms/blog/:slug" element={<RequireAuth moduleName={"blog"} action="view"><BlogDetails /></RequireAuth>} />,
+        <Route path="/cms/blog/add" element={<RequireAuth moduleName={"blog"} action="create"><AddBlog /></RequireAuth>} />,
+        <Route path="/cms/blog/update/:slug" element={<RequireAuth moduleName={"blog"} action="update"><UpdateBlog /></RequireAuth>} />,
         {/* /end */}
 
         {/* SEO  */}
-        <Route path="/seo/:parentslug?/:childslug?/:gslug?/update" element={<ProtectedRoute moduleName={"seo"} action="update"><UpdateSeo /></ProtectedRoute>} />
-        <Route path="/seo/:parentslug?/:childslug?/:gslug?/add" element={<ProtectedRoute moduleName={"seo"} action="create"><AddSeo /></ProtectedRoute>} />
-        <Route path="/seo/:parentslug?/:childslug?/:gslug/details" element={<ProtectedRoute moduleName={"seo"} action="view"><SeoDetails /></ProtectedRoute>} />
-        <Route path="/seo/:parentslug?/:childslug?/:gslug?" element={<ProtectedRoute moduleName={"seo"} action="view"><Seo /></ProtectedRoute>} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug?/update" element={<RequireAuth moduleName={"seo"} action="update"><UpdateSeo /></RequireAuth>} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug?/add" element={<RequireAuth moduleName={"seo"} action="create"><AddSeo /></RequireAuth>} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug/details" element={<RequireAuth moduleName={"seo"} action="view"><SeoDetails /></RequireAuth>} />
+        <Route path="/seo/:parentslug?/:childslug?/:gslug?" element={<RequireAuth moduleName={"seo"} action="view"><Seo /></RequireAuth>} />
         {/* end */}
 
 
