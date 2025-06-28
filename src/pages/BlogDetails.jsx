@@ -33,12 +33,11 @@ const BlogDetails = () => {
     <Wrapper>
       <Row>
         <Col md={2}>
-          <ProtectedMethod moduleName={"blog"} action='update'>
-
+          {/* <ProtectedMethod moduleName={"blog"} action='update'>
             <NavLink to={`/cms/blog/update/${btoa(decodeSlug)}`}>
               <Button color="primary" size="sm">Edit</Button>
             </NavLink>
-          </ProtectedMethod>
+          </ProtectedMethod> */}
         </Col>
 
 

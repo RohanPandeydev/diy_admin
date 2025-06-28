@@ -7,6 +7,9 @@ import { buildQueryString } from "../utils/BuildQuery";
 import CategoryServices from "../services/CategoryServices";
 import Loader from "../utils/Loader/Loader";
 import NoDataFound from "../utils/NoDataFound";
+import { MdArrowBackIos } from "react-icons/md";
+import { Button } from "reactstrap";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   // Fetch root-level SEO categories
@@ -34,9 +37,21 @@ const Dashboard = () => {
     errorMsg: "",
   });
 
+   const nav = useNavigate()
+  
+  
+    const handleBack = () => {
+      nav(-1)
+    }
+
   return (
     <Wrapper>
-      {isCategoryLoad ?<Loader/>:categoryList?.length==0? <NoDataFound msg={"No Tree Found"}/>:<MenuTree isCategoryLoad={isCategoryLoad} data={categoryList}/>}
+      <div className="admin-heading-header">
+        <Button className="back-button" type="click" onClick={handleBack}>
+          <MdArrowBackIos />Back</Button>
+        <h1>Dashboard</h1>
+      </div>
+      {isCategoryLoad ? <Loader /> : categoryList?.length == 0 ? <NoDataFound msg={"No Tree Found"} /> : <MenuTree isCategoryLoad={isCategoryLoad} data={categoryList} />}
     </Wrapper>
   );
 };

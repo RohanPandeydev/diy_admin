@@ -74,6 +74,11 @@ const Pagination = ({
 
   return (
     <div className={`pagination-main-box ${className}`}>
+      {/* Optional: Page Info */}
+      <div className="pagination-info">
+        Showing {currentPage} - {page_count} of {total} Pages
+      </div>
+
       <div className="pagination-btns">
         {/* First Page Button */}
         <Button
@@ -81,9 +86,9 @@ const Pagination = ({
           size="icon"
           onClick={() => handlePageChange(1)}
           disabled={currentPage === 1}
-          className="h-8 w-8"
+          className="h-8 w-8 first-last-button"
         >
-          <FiChevronsLeft className="h-4 w-4" />
+          <FiChevronsLeft className="h-4 w-4" color="#019bbf"/>
         </Button>
 
         {/* Previous Page Button */}
@@ -92,9 +97,9 @@ const Pagination = ({
           size="icon"
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="h-8 w-8"
+          className="h-8 w-8 next-prev-button"
         >
-          <FiChevronLeft className="h-4 w-4" />
+          <FiChevronLeft className="h-4 w-4" color="#019bbf"/>
         </Button>
 
         {/* Page Numbers */}
@@ -106,7 +111,7 @@ const Pagination = ({
               size="icon"
               onClick={() => handlePageChange(pageNum)}
               disabled={pageNum === '...'}
-              className={pageNum == currentPage ? "h-8 w-8 active" : "h-8 w-8 "}
+              className={pageNum == currentPage ? "h-8 w-8 pagination-active-button active" : "h-8 w-8 "}
             >
               {pageNum}
             </Button>
@@ -119,9 +124,9 @@ const Pagination = ({
           size="icon"
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === page_count}
-          className="h-8 w-8"
+          className="h-8 w-8 next-prev-button"
         >
-          <FiChevronRight className="h-4 w-4" />
+          <FiChevronRight className="h-4 w-4" color="#019bbf"/>
         </Button>
 
         {/* Last Page Button */}
@@ -130,15 +135,10 @@ const Pagination = ({
           size="icon"
           onClick={() => handlePageChange(page_count)}
           disabled={currentPage === page_count}
-          className="h-8 w-8"
+          className="h-8 w-8 first-last-button"
         >
-          <FiChevronsRight className="h-4 w-4" />
+          <FiChevronsRight className="h-4 w-4" color="#019bbf"/>
         </Button>
-      </div>
-
-      {/* Optional: Page Info */}
-      <div className="pagination-info">
-        {currentPage} - {page_count} of {total}
       </div>
     </div>
   );

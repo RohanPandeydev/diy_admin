@@ -21,6 +21,7 @@ import { useMutation } from '@tanstack/react-query';
 import AuthServices from '../services/AuthServices';
 import useCustomContext from '../contexts/Context';
 import Loader from '../utils/Loader/Loader';
+import { CgProfile } from "react-icons/cg";
 
 const Header = ({ handleToggleMenu }) => {
 
@@ -109,9 +110,10 @@ const Header = ({ handleToggleMenu }) => {
                             <h4>{userData?.username || ""}</h4>
                                 <p>Available</p>
                             </div> */}
-                              <div className="avatar">
+                              {/* <div className="avatar">
                                 <img className="img-fluid" src={ImagesPath.logo} alt="" />
-                              </div>
+                              </div> */}
+                              <CgProfile fontSize={30}/>
                             </div>
                           </DropdownToggle>
                           <DropdownMenu>

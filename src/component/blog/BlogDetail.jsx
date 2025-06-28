@@ -11,6 +11,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import ButtonLoader from '../../utils/Loader/ButtonLoader'
 import { NavLink, useNavigate } from 'react-router-dom'
 import ProtectedRoute, { ProtectedMethod } from '../../guard/RBACGuard'
+import { MdOutlineDeleteOutline } from 'react-icons/md'
+import { FaRegEdit } from 'react-icons/fa'
 
 const BlogDetail = ({ decodeSlug }) => {
 
@@ -182,103 +184,55 @@ const BlogDetail = ({ decodeSlug }) => {
   return (
     <>
 
-      {isLoading ? null : <ProtectedMethod  moduleName={"blog"} action='delete'><Button color="danger" className='mx-2' size="sm" disabled={deletemutation?.isLoading} onClick={() => handleSoftDelete(blogDetails)}>{deletemutation?.isLoading ? <ButtonLoader /> : "Delete"}</Button></ProtectedMethod>}
+      {/* {isLoading ? null : <ProtectedMethod moduleName={"blog"} action='delete'>
+        <Button color="danger" className='mx-2' size="sm" disabled={deletemutation?.isLoading} onClick={() => handleSoftDelete(blogDetails)}>
+          {deletemutation?.isLoading ? <ButtonLoader /> : <MdOutlineDeleteOutline fontSize={26} />}</Button>
+      </ProtectedMethod>} */}
 
       {
         isLoading ? <Loader /> : <Row>
-          <Col lg={8} md={6}>
-
-            <div className="order-desc-info-box">
-              <h3>Category:
-                <NavLink to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + blogDetails?.category?.slug}>
-                  {blogDetails?.category?.name}
-
-                </NavLink>
-              </h3>
-              <h3>Title:{blogDetails?.title}</h3>
-              <h5>
-                <span>Slug : {blogDetails?.slug}</span>
-              </h5>
-              <div className="order-cus-details">
-                <h4>
-                  {
-                    blogDetails.content ? parse(blogDetails?.content) : null
-                  }
-                </h4>
-                {
-                  blogDetails?.is_published ? <p className="order-cus-email">Published On : {moment(blogDetails?.published_at).format("lll")}</p> : null
-                }
-
-
-
-
+          <Col lg={12} md={12}>
+            <div className="blog-details-container">
+              <div className="blog-image-header">
+                {blogDetails?.cover_image ? <div>
+                  <img src={config.apiUrl + "/" + blogDetails?.cover_image} height={80} width={100} />
+                </div> : null}
+                <div className='blog-details-header'>
+                  <h3>Category:</h3>
+                  <NavLink to={"/seo/" + blogDetails?.category?.parent?.slug + "/" + blogDetails?.category?.slug} className="blog-category-link">
+                    {blogDetails?.category?.name}
+                  </NavLink>
+                </div>
+                <ProtectedMethod moduleName={"blog"} action='update'>
+                  <NavLink to={`/cms/blog/update/${btoa(decodeSlug)}`}>
+                    <Button color="primary" size="sm"><FaRegEdit fontSize={26}/></Button>
+                  </NavLink>
+                </ProtectedMethod>
+                {isLoading ? null : <ProtectedMethod moduleName={"blog"} action='delete'>
+                  <Button color="danger" size="sm" disabled={deletemutation?.isLoading} onClick={() => handleSoftDelete(blogDetails)}>
+                    {deletemutation?.isLoading ? <ButtonLoader /> : <MdOutlineDeleteOutline fontSize={26} />}</Button>
+                </ProtectedMethod>}
               </div>
-
-
-
-
-
-              <label>
-
+              <h3>Title :
+                <span>{blogDetails?.title}</span>
+              </h3>
+              <h3>Slug :
+                <span>{blogDetails?.slug}</span>
+              </h3>
+              <h4 className="blog-content">{blogDetails.content ? parse(blogDetails?.content) : null}
+              </h4>{blogDetails?.is_published ? <p className="order-cus-email-1">Published On : <span>{moment(blogDetails?.published_at).format("lll")}</span></p> : null}
+              <label className='blog-table-radio'>
                 <input type='radio' name={'publish-' + decodeSlug} checked={blogDetails?.is_published == true} onChange={() => handleChangePublishedStatus(blogDetails)} />
                 Published
-
-
-
-
-
               </label>
-              <label>
-
+              <label className='blog-table-radio'>
                 <input type='radio' name={'publish-' + decodeSlug} checked={blogDetails?.is_published == false} onChange={() => handleChangePublishedStatus(blogDetails)} />
                 Unpublished
-
-
-
-
-
               </label>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             </div>
           </Col>
-          {blogDetails?.cover_image ? <Col lg={4} md={6}>
-            <img src={config.apiUrl + "/" + blogDetails?.cover_image} height={100} width={100} />
-
-          </Col> : null}
-
         </Row>
       }
-
-
-
-
-
-
     </>
   )
 }

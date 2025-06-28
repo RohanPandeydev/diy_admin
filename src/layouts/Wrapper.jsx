@@ -22,7 +22,7 @@ const Wrapper = ({ children }) => {
     <>
       <Header handleToggleMenu={handleToggleMenu} />
       <main className="main-body">
-        <Button type="click" className="text-align-left" onClick={handleBack}>Back</Button>
+        {/* <Button type="click" className="text-align-left" onClick={handleBack}>Back</Button> */}
         <div className="main-row">
           <LeftSidebar toggleMenu={toggleMenu} />
           <div className="body-content">{children}</div>

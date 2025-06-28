@@ -8,6 +8,9 @@ import { buildQueryString } from "../utils/BuildQuery";
 import CategoryServices from "../services/CategoryServices";
 import Swal from "sweetalert2";
 import useCustomContext from "../contexts/Context";
+import { TbSeo } from "react-icons/tb";
+import { IoImages } from "react-icons/io5";
+import { FaChartLine } from "react-icons/fa";
 
 const LeftSidebar = ({ toggleMenu }) => {
   const location = useLocation();
@@ -118,7 +121,7 @@ const LeftSidebar = ({ toggleMenu }) => {
     const cmsSection = {
       parent: "CMS",
       id: 1,
-      icon: <FiUser />,
+      icon: <IoImages />,
       children: filterChildrenByPermission([
         { name: "Blog", id: 1, rbac: "blog", feature: "blog", link: "/cms/blog" }
       ]),
@@ -154,14 +157,14 @@ const LeftSidebar = ({ toggleMenu }) => {
     const seoSection = {
       parent: "SEO",
       id: 3,
-      icon: <FiUser />,
+      icon: <FaChartLine />,
       children: buildSeoChildren(categoryList || []),
     };
 
     const updatedMenuList = [cmsSection, seoSection].filter(
       (section) => section.children?.length
     );
-//add staffmanagemnrt in pdte menulist
+    //add staffmanagemnrt in pdte menulist
     setMenuList(updatedMenuList);
   }, [categoryList, userPermission]);
 
@@ -187,25 +190,25 @@ const LeftSidebar = ({ toggleMenu }) => {
         <li className="nav-item" key={item.id}>
           <div className="d-flex justify-content-between align-items-center">
             <NavLink
-              className="nav-link flex-grow-1"
+              className="nav-link flex-grow-1 unique-link"
               to={link}
               style={({ isActive }) => ({
-                color: isActive ? "#F8615E" : "#000",
+                backgroundColor: isActive ? "#019bbf" : "transparent",
+                color: isActive ? "#FFF" : "#000",
               })}
             >
               {item.name}
+              {/* Toggle icon if submenu exists */}
+              {hasSubMenu && (
+                <span
+                  className="toggle-submenu"
+                  onClick={() => toggleSubMenu(item.id)}
+                  style={{ cursor: "pointer", paddingRight: "10px" }}
+                >
+                  {isSubMenuOpen ? <FiMinus /> : <FiPlus />}
+                </span>
+              )}
             </NavLink>
-
-            {/* Toggle icon if submenu exists */}
-            {hasSubMenu && (
-              <span
-                className="toggle-submenu"
-                onClick={() => toggleSubMenu(item.id)}
-                style={{ cursor: "pointer", paddingRight: "10px" }}
-              >
-                {isSubMenuOpen ? <FiMinus /> : <FiPlus />}
-              </span>
-            )}
           </div>
 
           {/* Recursive rendering of nested submenus */}
@@ -227,7 +230,7 @@ const LeftSidebar = ({ toggleMenu }) => {
             className="nav-link"
             to="/"
             style={({ isActive }) => ({
-              backgroundColor: isActive ? "#F8615E" : "",
+              backgroundColor: isActive ? "#019bbf" : "transparent",
               color: isActive ? "#fff" : "#000",
             })}
           >

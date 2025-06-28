@@ -4,6 +4,7 @@ import parse from 'html-react-parser'
 import moment from 'moment'
 import config from '../../config'
 import { NavLink } from 'react-router-dom'
+import { FaEye, FaRegEdit } from 'react-icons/fa'
 
 const TableView = ({ headers = [], data = [], showActions = false, renderActions = () => null }) => {
     const [expandedRows, setExpandedRows] = useState({})
@@ -42,7 +43,11 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                 const value = row[header?.key]
 
                                                 if (header.html) {
-                                                    return <td key={colIndex}>{value && parse(value)}</td>
+                                                    return <td key={colIndex} className='truncate-button' style={{ minWidth: '250px', maxWidth: '300px' }}>
+                                                        <div style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'normal', wordBreak: 'break-word', }}>
+                                                            {value && parse(value)}
+                                                        </div>
+                                                    </td>
                                                 }
                                                 if (header.json) {
                                                     return <td key={colIndex}>{value && JSON.parse(value)}</td>
@@ -64,7 +69,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
 
                                                 if (header.nested) {
                                                     return (
-                                                        <td key={colIndex}>
+                                                        <td key={colIndex} >
                                                             {value?.length == 0 ? "N/A" : <button className="btn btn-sm btn-outline-primary" onClick={() => toggleRow(rowIndex, value)}>
                                                                 {expandedRows[rowIndex] ? 'Hide' : 'Show'} Sub Category
                                                             </button>}
@@ -86,7 +91,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                     <td key={colIndex}>
                                                         {typeof value === 'boolean' ? (
                                                             <>
-                                                                <label>
+                                                                <label className='blog-table-radio mb-1'>
                                                                     <input
                                                                         type="radio"
                                                                         name={`publish-${rowIndex}`}
@@ -96,7 +101,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                                     />
                                                                     Published
                                                                 </label>
-                                                                <label>
+                                                                <label className='blog-table-radio'>
                                                                     <input
                                                                         type="radio"
                                                                         name={`publish-${rowIndex}`}
@@ -108,7 +113,7 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                                 </label>
                                                             </>
                                                         ) : (
-                                                           header?.isAction?value||"":value||"N/A"
+                                                            header?.isAction ? value || "" : value || "N/A"
                                                         )}
                                                     </td>
                                                 )
@@ -144,10 +149,10 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
                                                                         <td>{item.slug}</td>
                                                                         <td>
                                                                             <NavLink to={`/seo/${parentslug}/${btoa(item.slug)}`}>
-                                                                                <Button color="info" size="sm" className="me-2">View</Button>
+                                                                                <Button color="info" size="sm" className="me-2"><FaEye /></Button>
                                                                             </NavLink>
                                                                             <NavLink to={`/seo/${parentslug}/update/${btoa(item.slug)}`}>
-                                                                                <Button color="primary" size="sm">Edit</Button>
+                                                                                <Button color="primary" size="sm"><FaRegEdit /></Button>
                                                                             </NavLink>
                                                                         </td>
                                                                     </tr>

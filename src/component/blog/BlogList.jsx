@@ -16,6 +16,10 @@ import AsyncSelect from 'react-select/async';
 import { useEffect } from 'react';
 import ProtectedRoute, { ProtectedMethod } from '../../guard/RBACGuard';
 
+import { BiReset } from "react-icons/bi";
+import { FaEye, FaRegEdit } from 'react-icons/fa';
+import { MdOutlineDeleteOutline } from 'react-icons/md';
+
 const BlogList = () => {
     const navigate = useNavigate()
     const location = useLocation();
@@ -207,28 +211,21 @@ const BlogList = () => {
     const renderActions = (row) => (
         <>
             <NavLink to={`/cms/blog/${btoa(row.slug)}`}>
-                <Button color="info" size="sm" className="me-2">View</Button>
+                <Button color="info" size="sm" className="me-2"><FaEye /></Button>
             </NavLink>
             <ProtectedMethod moduleName={"blog"} action='update'>
                 <NavLink to={`/cms/blog/update/${btoa(row.slug)}`}>
-                    <Button color="primary" size="sm">Edit</Button>
+                    <Button color="primary" size="sm"><FaRegEdit /></Button>
                 </NavLink>
             </ProtectedMethod>
             <ProtectedMethod moduleName={"blog"} action='delete'>
-                <Button color="danger" className='mx-2' size="sm" disabled={row.id == rowId || deletemutation?.isLoading} onClick={() => handleSoftDelete(row)}>{row.id == rowId || deletemutation?.isLoading ? <ButtonLoader /> : "Delete"}</Button>
+                <Button color="danger" className='mx-2' size="sm" disabled={row.id == rowId || deletemutation?.isLoading} onClick={() => handleSoftDelete(row)}>{row.id == rowId || deletemutation?.isLoading ? <ButtonLoader /> : <MdOutlineDeleteOutline />}</Button>
             </ProtectedMethod>
 
 
 
         </>
     )
-
-
-
-
-
-
-
 
     const handleChangePublishedStatus = (row) => {
         Swal.fire({
@@ -376,40 +373,8 @@ const BlogList = () => {
     ]
     return (
         <>
-            <Row>            <Col md="6" className="mb-2">
-                <FormGroup className="common-formgroup">
-                    <AsyncSelect
-                        key={key} // Add key prop to force re-render when category slug changes
-                        cacheOptions
-                        defaultOptions
-                        isDisabled={isCategoryLoad || !categoryList?.slug}
-                        loadOptions={handleSearchCategory}
-                        placeholder={categoryList?.slug ? "Search Category..." : "Select parent category first"}
-                        value={
-                            searchFilter?.category
-                                ? {
-                                    label: searchFilter?.categoryName,
-                                    value: searchFilter?.category,
-                                }
-                                : null
-                        }
-                        onChange={(selectedOption) => {
-                            setSearchFilter({
-                                ...searchFilter,
-                                category: selectedOption?.value,
-                                categoryName: selectedOption?.label
-                            });
-                        }}
-                    />
-
-
-                </FormGroup>
-            </Col>
-
-
-
-
-                <Col md="6" className="mb-2">
+            <Row>
+                <Col md="3" className="mb-2">
 
                     <Input
                         type="text"
@@ -422,7 +387,37 @@ const BlogList = () => {
 
                 </Col>
 
-                <Col md="6" className="mb-2">
+                <Col md="4" className="mb-2">
+                    <FormGroup className="common-formgroup">
+                        <AsyncSelect
+                            key={key} // Add key prop to force re-render when category slug changes
+                            cacheOptions
+                            defaultOptions
+                            isDisabled={isCategoryLoad || !categoryList?.slug}
+                            loadOptions={handleSearchCategory}
+                            placeholder={categoryList?.slug ? "Search Category..." : "Select parent category first"}
+                            value={
+                                searchFilter?.category
+                                    ? {
+                                        label: searchFilter?.categoryName,
+                                        value: searchFilter?.category,
+                                    }
+                                    : null
+                            }
+                            onChange={(selectedOption) => {
+                                setSearchFilter({
+                                    ...searchFilter,
+                                    category: selectedOption?.value,
+                                    categoryName: selectedOption?.label
+                                });
+                            }}
+                        />
+
+
+                    </FormGroup>
+                </Col>
+
+                <Col md="3" className="mb-2">
 
                     <Input
                         type="select"
@@ -438,8 +433,10 @@ const BlogList = () => {
                         <option value={false}>Unpublished</option>
                     </Input>
                 </Col>
-
-                <Button type="click" onClick={handleResetFilter}>Reset</Button>
+                <Col md={2}>
+                    <Button type="click" onClick={handleResetFilter} className="reset-button">
+                    <BiReset />Reset</Button>
+                </Col>
             </Row>
 
             {
