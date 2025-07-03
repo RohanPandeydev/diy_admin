@@ -120,7 +120,7 @@ const Header = ({ handleToggleMenu }) => {
                             <ul>
                              
                               <li>
-                                <DropdownItem href="#" tag="a"> <FaRegUser /> Profile</DropdownItem>
+                                {/* <DropdownItem href="#" tag="a"> <FaRegUser /> Profile</DropdownItem> */}
                                 {/* <Link className='dropdown-item' to={"/profile"}><FaRegUser />Profile</Link> */}
                               </li>
                             

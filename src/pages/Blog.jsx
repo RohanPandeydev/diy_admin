@@ -19,8 +19,8 @@ const Blog = () => {
         <Wrapper>
             <div className="blog-header">
                 <div className="admin-heading-header">
-                    <Button className="back-button" type="click" onClick={handleBack}>
-                        <MdArrowBackIos />Back</Button>
+                    {/* <Button className="back-button" type="click" onClick={handleBack}>
+                        <MdArrowBackIos />Back</Button> */}
                     <h1>Blog List</h1>
                 </div>
                 <ProtectedMethod moduleName={"blog"} action='create'>

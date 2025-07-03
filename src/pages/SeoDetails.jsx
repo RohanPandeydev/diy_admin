@@ -30,19 +30,18 @@ const SeoDetails = () => {
 
   return (
     <Wrapper>
-      <Row>
-        <Col md={2}>
+      <div className='seo-header-container'>
           <ProtectedMethod moduleName={"seo"} action='update'>
 
+            <h6>SEO</h6>
             <NavLink to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}>
-              <Button color="primary" size="sm">Edit</Button>
+              <Button color="primary" className='back-button me-2'>Edit</Button>
             </NavLink>
           </ProtectedMethod>
-        </Col>
 
 
 
-      </Row>
+      </div>
       <SeoDetail slugToCall={slugToCall} parentslug={parentslug} childslug={childslug} gslug={gslug} />
 
 

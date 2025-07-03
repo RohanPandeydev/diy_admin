@@ -116,87 +116,96 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
             isAction: true,
         }
     ];
+
+    console.log(seoDetails, "eo")
     return (
         <>
             <div className='seo-header-container'>
                 <h6>SEO</h6>
+
                 {isSeoDetailsLoad ? "" : <>
                     <ProtectedMethod moduleName={"seo"} action='update'>
-                        <NavLink to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}>
-                            <Button className='back-button mt-3'><FaEdit />Edit</Button>
-                        </NavLink>
+                        <div className="d-flex align-items-center mt-3">
+                            <NavLink to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/update`}>
+                                <Button className="back-button me-2"><FaEdit /> Edit</Button>
+                            </NavLink>
+
+                            <NavLink to={`/seo${parentslug ? `/${parentslug}` : ""}${childslug ? `/${childslug}` : ""}${gslug ? `/${gslug}` : ""}/details`}>
+                                <Button color="info" ><FaEye /></Button>
+                            </NavLink>
+                        </div>
+
+
+
                     </ProtectedMethod>
                 </>}
             </div>
             {
                 isSeoDetailsLoad ? <Loader /> : seoDetails?.length == 0 ? <NoDataFound msg={"No SEO Found"} /> : <>
+
                     {/* <TableView headers={headers} data={seoDetails} showActions={true} renderActions={renderActions} /> */}
 
                     <div className="seo-content-container">
+
                         <div className='seo-content-box'>
                             <h3>Title</h3>
-                            <p>home-Title</p>
+                            <p>{seoDetails[0]?.title ||
+                                'N/A'}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>Slug</h3>
-                            <p>home</p>
+                            <p>{seoDetails[0]?.slug ||
+                                'N/A'}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>Meta Title</h3>
-                            <p>Welcome to Our Website - Home-title</p>
+                            <p>{seoDetails[0]?.meta_title || "N/A"}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>Meta Description</h3>
-                            <p>Discover our latest features, services, and updates. Explore our homepage to learn more.--Description</p>
+                            <p>{seoDetails[0]?.meta_description || "N/A"}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>Meta Keywords</h3>
-                            <p>homepage, welcome, services, features, updates</p>
+                            <p>{seoDetails[0]?.meta_keywords || "N/A"}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>Canonical URL</h3>
                             <p>
-                                <Link>https://example.com/diy-prefab-kits/wall-and-roofing-solutions</Link>
+                               {seoDetails[0]?.canonical_url ? <a href={seoDetails[0]?.canonical_url || "/"} target='_diy'>{seoDetails[0]?.canonical_url || "N/A"} </a>:"N/A"}
                             </p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>OG Title</h3>
-                            <p>Welcome to Our Website</p>
+                            <p>{seoDetails[0]?.og_title || "N/A"}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>OG Description</h3>
-                            <p>Check out the homepage to explore our services and recent updates.</p>
+                            <p>{seoDetails[0]?.og_description || "N/A"}</p>
                         </div>
 
                         <div className='seo-content-box'>
                             <h3>Google CSE ID</h3>
-                            <p>012345678901234567890:diykitsearch</p>
+                            <p>{seoDetails[0]?.google_cseid || "N/A"}</p>
                         </div>
                         <div className='seo-content-box'>
                             <h3>OG Type:</h3>
-                            <p>website</p>
+                            <p>{seoDetails[0]?.og_type || "N/A"}</p>
                         </div>
                         <div className='seo-content-box'>
                             <h3>Robots:</h3>
-                            <p>index, follow</p>
+                            <p>{seoDetails[0]?.robots || "N/A"}</p>
                         </div>
-                        <div className='seo-content-box'>
-                            <h3>Category:</h3>
-                            <p>Home</p>
-                        </div>
-                        <div className='seo-content-box'>
-                            <h3>Category Slug:</h3>
-                            <p>home</p>
-                        </div>
+
                     </div>
-                    <div className="seo-header-footer-tag">
+                    {/* <div className="seo-header-footer-tag">
                         <div className='seo-content-box'>
                             <h3>Header Scripts:</h3>
                             <h4>
@@ -209,7 +218,7 @@ const SeoList = ({ parentslug, childslug, gslug, slugToCall }) => {
                                 {"<script>console.log('Footer script loaded');</script>"}
                             </h4>
                         </div>
-                    </div>
+                    </div> */}
                 </>
             }
 
