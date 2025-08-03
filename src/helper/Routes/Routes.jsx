@@ -17,6 +17,7 @@ import StaffDetails from "../../pages/StaffDetails";
 import AddStaff from "../../pages/AddStaff";
 import UpdateStaff from "../../pages/UpdateStaff";
 import ProtectedRoute from "../../guard/RBACGuard";
+import FormQuery from "../../pages/FormQuery";
 
 const RoutesPath = () => {
 
@@ -44,7 +45,12 @@ const RoutesPath = () => {
         <Route path="/seo/:parentslug?/:childslug?/:gslug?" element={<RequireAuth moduleName={"seo"} action="view"><Seo /></RequireAuth>} />
         {/* end */}
 
-
+     {/* Form Query */}
+        <Route path="/form/design-consultant" element={<RequireAuth moduleName={"blog"} action="view"><FormQuery /></RequireAuth>} />,
+        <Route path="/form/inquiry" element={<RequireAuth moduleName={"blog"} action="view"><FormQuery /></RequireAuth>} />,
+        <Route path="/form/contact" element={<RequireAuth moduleName={"blog"} action="view"><FormQuery /></RequireAuth>} />,
+    
+        {/* /end */}
 
 
 

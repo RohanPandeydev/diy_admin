@@ -63,6 +63,17 @@ const LeftSidebar = ({ toggleMenu }) => {
       // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
     ],
   };
+  const Inquiries = {
+    parent: "Inquiries",
+    id: 1,
+    icon: <FiUser />,
+    children: [
+      { name: "Design & Consultant", id: 1, rbac: "staff", feature: "design", link: "/form/design-consultant?query=design_consultant" },
+      { name: "Inquiry Form", id: 1, rbac: "staff", feature: "inquiry", link: "/form/inquiry?query=inquiry" },
+      { name: "Contact Us", id: 1, rbac: "staff", feature: "contact_us", link: "/form/contact?query=contact" },
+      // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
+    ],
+  };
 
   useEffect(() => {
     const buildSeoChildren = (categories, parentSlug = "") => {
@@ -89,7 +100,7 @@ const LeftSidebar = ({ toggleMenu }) => {
 
 
 
-    setMenuList([cmsSection, seoSection]); //add staffmanagemnrt
+    setMenuList([cmsSection, seoSection,Inquiries]); //add staffmanagemnrt
   }, [categoryList]);
 
   useEffect(() => {
@@ -161,12 +172,12 @@ const LeftSidebar = ({ toggleMenu }) => {
       children: buildSeoChildren(categoryList || []),
     };
 
-    const updatedMenuList = [cmsSection, seoSection].filter(
+    const updatedMenuList = [cmsSection, seoSection,Inquiries].filter(
       (section) => section.children?.length
     );
     //add staffmanagemnrt in pdte menulist
     setMenuList(updatedMenuList);
-  }, [categoryList, userPermission]);
+  }, [categoryList, userPermission,Inquiries]);
 
   const handleParentClick = (parent) => {
     setActiveParent((prev) => (prev === parent ? null : parent));

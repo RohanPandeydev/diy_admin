@@ -2,6 +2,7 @@ import { FiUser } from "react-icons/fi";
 
 
 const SideBarMenuList = [
+    
     {
         parent: "CMS",
         id: 1,
@@ -11,7 +12,6 @@ const SideBarMenuList = [
             // { name: "Sample Grid", id: , feature: "samplegrid", link: "/sample/grid" },
         ],
     },
-
     {
         parent: "SEO",
         id: 1,

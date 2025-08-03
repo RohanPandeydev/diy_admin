@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Table } from 'reactstrap'
+import { Button, Table, Badge } from 'reactstrap'
 import parse from 'html-react-parser'
 import moment from 'moment'
 import config from '../../config'
@@ -16,7 +16,6 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
             value: value
         }))
     }
-
 
     return (
         <div className="member-view-wrapper">
@@ -65,6 +64,16 @@ const TableView = ({ headers = [], data = [], showActions = false, renderActions
 
                                                 if (header.date) {
                                                     return <td key={colIndex}>{value && moment(value).format("lll")}</td>
+                                                }
+
+                                                if (header.badge) {
+                                                    return (
+                                                        <td key={colIndex}>
+                                                            {header.render ? header.render(value, row) : (
+                                                                <Badge color="secondary">{value || "N/A"}</Badge>
+                                                            )}
+                                                        </td>
+                                                    )
                                                 }
 
                                                 if (header.nested) {
