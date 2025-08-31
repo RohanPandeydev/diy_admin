@@ -15,6 +15,8 @@ import config from '../../../config'
 import CategoryServices from '../../services/CategoryServices'
 import { buildQueryString } from '../../utils/BuildQuery'
 import AsyncSelect from 'react-select/async';
+import FAQSection from './FAQSection';
+import EntitiesKeywords from './EntitiesKeywords';
 
 const BlogForm = ({ title, categorySlug }) => {
   const { slug } = useParams()
@@ -37,7 +39,12 @@ const BlogForm = ({ title, categorySlug }) => {
     content: "",
     is_published: false,
     category_id: "",
-    category_name: ""
+    category_name: "",
+    // GEO fields
+    ai_summary: "",
+    faq_section: [],
+    schema_type: "Article",
+    entities_keywords: []
   }
 
   const formik = useFormik({
@@ -76,6 +83,21 @@ const BlogForm = ({ title, categorySlug }) => {
     formData.append("content", data?.content)
     formData.append("category_id", data?.category_id)
     formData.append("is_published", data?.is_published)
+    
+    // GEO fields
+    if (data?.ai_summary) {
+      formData.append("ai_summary", data?.ai_summary)
+    }
+    if (data?.faq_section && data?.faq_section.length > 0) {
+      formData.append("faq_section", JSON.stringify(data?.faq_section))
+    }
+    if (data?.schema_type) {
+      formData.append("schema_type", data?.schema_type)
+    }
+    if (data?.entities_keywords && data?.entities_keywords.length > 0) {
+      formData.append("entities_keywords", JSON.stringify(data?.entities_keywords))
+    }
+    
     if (coverImg) {
       formData.append("cover_image", coverImg)
     }
@@ -206,18 +228,21 @@ const BlogForm = ({ title, categorySlug }) => {
       formik.setFieldValue("content", data?.content)
       formik.setFieldValue("slug", data?.slug)
       formik.setFieldValue("is_published", data?.is_published)
+      
+      // GEO fields
+      formik.setFieldValue("ai_summary", data?.ai_summary || "")
+      formik.setFieldValue("faq_section", data?.faq_section || [])
+      formik.setFieldValue("schema_type", data?.schema_type || "Article")
+      formik.setFieldValue("entities_keywords", data?.entities_keywords || [])
+      
       if (data?.cover_image) {
         formik.setFieldValue("slugId", decodeSlug)
-
-
         setShowCoverImg(config.apiUrl + "/" + data?.cover_image)
       }
-
 
       if (data?.category) {
         formik.setFieldValue("category_id", data?.category?.id)
         formik.setFieldValue("category_name", data?.category?.name)
-
       }
 
 
@@ -442,6 +467,82 @@ const BlogForm = ({ title, categorySlug }) => {
               </div>
               {formik.touched.is_published && <p className="text-danger">{formik.errors.is_published}</p>}
             </FormGroup>
+          </Col>
+
+          {/* GEO Section */}
+          <Col md="12" className="mb-4">
+            <div className="geo-section">
+              <h4 className="mb-3">Generative Engine Optimization (GEO)</h4>
+              
+              {/* AI Summary */}
+              <Row>
+                <Col md="12" className="mb-3">
+                  <FormGroup className="common-formgroup">
+                    <Label>AI Summary</Label>
+                    <Input
+                      type="textarea"
+                      {...formik.getFieldProps("ai_summary")}
+                      placeholder="Enter a short factual summary (1-2 sentences) for AI extraction..."
+                      rows="3"
+                      className={formik.touched.ai_summary && formik.errors.ai_summary ? "is-invalid" : ""}
+                    />
+                    <small className="text-muted">
+                      Provide a concise factual summary that AI can extract and use for search results.
+                    </small>
+                    {formik.touched.ai_summary && formik.errors.ai_summary && (
+                      <p className="text-danger">{formik.errors.ai_summary}</p>
+                    )}
+                  </FormGroup>
+                </Col>
+              </Row>
+
+              {/* Schema Type */}
+              <Row>
+                <Col md="6" className="mb-3">
+                  <FormGroup className="common-formgroup">
+                    <Label>Schema Type</Label>
+                    <Input
+                      type="select"
+                      {...formik.getFieldProps("schema_type")}
+                      className={formik.touched.schema_type && formik.errors.schema_type ? "is-invalid" : ""}
+                    >
+                      <option value="Article">Article</option>
+                      <option value="FAQPage">FAQ Page</option>
+                      <option value="Product">Product</option>
+                      <option value="HowTo">How-To</option>
+                      <option value="BlogPosting">Blog Posting</option>
+                      <option value="NewsArticle">News Article</option>
+                    </Input>
+                    <small className="text-muted">
+                      Select the appropriate schema.org type for structured data.
+                    </small>
+                    {formik.touched.schema_type && formik.errors.schema_type && (
+                      <p className="text-danger">{formik.errors.schema_type}</p>
+                    )}
+                  </FormGroup>
+                </Col>
+              </Row>
+
+              {/* Entities & Keywords */}
+              <Row>
+                <Col md="12" className="mb-3">
+                  <EntitiesKeywords
+                    value={formik.values.entities_keywords}
+                    onChange={(value) => formik.setFieldValue("entities_keywords", value)}
+                  />
+                </Col>
+              </Row>
+
+              {/* FAQ Section */}
+              <Row>
+                <Col md="12" className="mb-3">
+                  <FAQSection
+                    value={formik.values.faq_section}
+                    onChange={(value) => formik.setFieldValue("faq_section", value)}
+                  />
+                </Col>
+              </Row>
+            </div>
           </Col>
 
           {/* Submit */}
